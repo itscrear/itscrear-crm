@@ -592,46 +592,71 @@ body.light .inactive-row td { opacity:.5; }
 
     <!-- MÉTRICAS -->
     <div class="page" id="page-metricas">
-      <!-- KPIs del año -->
-      <div class="met-kpi-grid" id="met-kpis"></div>
-      <!-- Charts -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div class="metrics-chart-wrap">
-          <div class="card-title">MRR & Margen $ mensual</div>
-          <div class="chart-container"><canvas id="chart-mrr"></canvas></div>
-        </div>
-        <div class="metrics-chart-wrap">
-          <div class="card-title">Margen % mensual</div>
-          <div class="chart-container"><canvas id="chart-margin"></canvas></div>
+      <!-- Tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--b1);padding-bottom:0">
+        <button class="m-tab on" id="met-tab-anual" onclick="switchMetTab('anual')" style="padding:8px 18px;border-radius:6px 6px 0 0;margin-bottom:-1px">Anual</button>
+        <button class="m-tab" id="met-tab-mensual" onclick="switchMetTab('mensual')" style="padding:8px 18px;border-radius:6px 6px 0 0;margin-bottom:-1px">Mensual</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;padding-bottom:8px">
+          <span style="font-size:11px;color:var(--t3);font-family:var(--mono)">Año:</span>
+          <select class="sel" id="met-year-sel" onchange="curYear=parseInt(this.value);renderMetricas()">
+            <option>2024</option><option>2025</option><option selected>2026</option>
+          </select>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div class="metrics-chart-wrap">
-          <div class="card-title">Costo Operativo mensual</div>
-          <div class="chart-container"><canvas id="chart-cost"></canvas></div>
+
+      <!-- TAB ANUAL -->
+      <div id="met-view-anual">
+        <div class="met-kpi-grid" id="met-kpis"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="metrics-chart-wrap">
+            <div class="card-title">MRR &amp; Margen $ · <span id="met-year-label" style="color:var(--red2)"></span></div>
+            <div class="chart-container"><canvas id="chart-mrr"></canvas></div>
+          </div>
+          <div class="metrics-chart-wrap">
+            <div class="card-title">Margen %</div>
+            <div class="chart-container"><canvas id="chart-margin"></canvas></div>
+          </div>
         </div>
-        <div class="metrics-chart-wrap">
-          <div class="card-title">Clientes activos por mes</div>
-          <div class="chart-container"><canvas id="chart-clients"></canvas></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="metrics-chart-wrap">
+            <div class="card-title">Costo Operativo</div>
+            <div class="chart-container"><canvas id="chart-cost"></canvas></div>
+          </div>
+          <div class="metrics-chart-wrap">
+            <div class="card-title">Clientes activos</div>
+            <div class="chart-container"><canvas id="chart-clients"></canvas></div>
+          </div>
         </div>
       </div>
-      <!-- Table -->
-      <div class="card">
-        <div class="card-head"><span class="card-title">Resumen mensual · <span id="met-year-label" style="color:var(--red2)"></span></span></div>
-        <div style="overflow-x:auto">
-        <table>
-          <thead><tr>
-            <th>Mes</th>
-            <th class="r">MRR</th>
-            <th class="r">Costo Op.</th>
-            <th class="r">Margen $</th>
-            <th class="r">Margen %</th>
-            <th class="r">Clientes</th>
-            <th class="r">Ticket Prom.</th>
-            <th class="r">LTV Prom.</th>
-          </tr></thead>
-          <tbody id="met-tbody"></tbody>
-        </table>
+
+      <!-- TAB MENSUAL -->
+      <div id="met-view-mensual" style="display:none">
+        <div class="met-kpi-grid" id="met-kpis-mes"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div class="metrics-chart-wrap">
+            <div class="card-title">Ingresos por cliente · <span id="met-mes-label" style="color:var(--red2)"></span></div>
+            <div class="chart-container"><canvas id="chart-mes-clientes"></canvas></div>
+          </div>
+          <div class="metrics-chart-wrap">
+            <div class="card-title">Margen % por cliente</div>
+            <div class="chart-container"><canvas id="chart-mes-margen"></canvas></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Detalle por cliente</span></div>
+          <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>Cliente</th>
+              <th class="r">MRR</th>
+              <th class="r">Costo Op.</th>
+              <th class="r">Margen $</th>
+              <th class="r">Margen %</th>
+              <th class="r">Cobro</th>
+            </tr></thead>
+            <tbody id="met-mes-tbody"></tbody>
+          </table>
+          </div>
         </div>
       </div>
     </div>
@@ -1572,14 +1597,16 @@ function setMonth(m){
   else if(curPage==='comparativa')renderComparativa();
   else if(curPage==='equipo')renderTeam();
   else if(curPage==='client')renderClient(curClientId);
+  else if(curPage==='metricas')renderMetricas();
 }
 function updatePeriod(){
-  curYear=parseInt(document.getElementById('year-sel').value)||2025;
+  curYear=parseInt(document.getElementById('year-sel').value)||2026;
   renderMonthStrip(); renderSidebar();
   if(curPage==='dashboard')renderDashboard();
   else if(curPage==='comparativa')renderComparativa();
   else if(curPage==='equipo')renderTeam();
   else if(curPage==='client')renderClient(curClientId);
+  else if(curPage==='metricas')renderMetricas();
 }
 
 // ══════════════════════════════════════════════════════
@@ -1657,8 +1684,9 @@ function renderDashboard(){
 
   // Add projects for current month
   const monthProjects = projects.filter(p=>{
-    if(!p.date) return false;
-    const d=new Date(p.date+'T12:00:00');
+    const f=p.fecha||p.date||'';
+    if(!f) return false;
+    const d=new Date(f+'T12:00:00');
     return d.getFullYear()===curYear && MONTHS[d.getMonth()]===curMonth;
   });
   const projIngreso = monthProjects.reduce((a,p)=>a+(p.ingreso||0),0);
@@ -2319,34 +2347,48 @@ document.getElementById('pf-cliente').addEventListener('change',updatePagoPrevie
 // PROYECTOS
 // ══════════════════════════════════════════════════════
 function renderProyectos() {
-  // Populate client dropdowns
   const allC = clients;
-  ['pj-cliente','pj-filter-client'].forEach(id=>{
-    const sel=document.getElementById(id);
-    if(!sel) return;
-    const cur=sel.value;
-    sel.innerHTML=(id==='pj-cliente'?'<option value="">— Suelto —</option>':'<option value="">Todos</option>')
-      +allC.map(c=>`<option value="${c.id}"${c.id===cur?' selected':''}>${c.name}</option>`).join('');
-  });
 
-  const filterClient=document.getElementById('pj-filter-client')?.value||'';
-  const filterYear=document.getElementById('pj-filter-year')?.value||'';
+  // Populate filter dropdown
+  const pfClient = document.getElementById('pj-filter-client');
+  if(pfClient) {
+    const cur = pfClient.value;
+    pfClient.innerHTML = '<option value="">Todos</option><option value="__suelto__">Solo sueltos</option>'
+      + allC.map(c=>`<option value="${c.id}"${c.id===cur?' selected':''}>${c.name}</option>`).join('');
+  }
+  // Populate form dropdown
+  const pjC = document.getElementById('pj-cliente');
+  if(pjC) {
+    const cur2 = pjC.value;
+    pjC.innerHTML = '<option value="">— Suelto —</option>'
+      + allC.map(c=>`<option value="${c.id}"${c.id===cur2?' selected':''}>${c.name}</option>`).join('');
+  }
 
-  let filtered=[...projects].sort((a,b)=>b.date.localeCompare(a.date));
-  if(filterClient) filtered=filtered.filter(p=>p.clientId===filterClient);
-  if(filterYear)   filtered=filtered.filter(p=>p.date&&p.date.startsWith(filterYear));
+  const filterClient = document.getElementById('pj-filter-client')?.value||'';
+  const filterYear   = document.getElementById('pj-filter-year')?.value||'';
 
-  document.getElementById('pj-tbody').innerHTML=filtered.map(p=>{
-    const cl=clients.find(x=>x.id===p.clientId);
-    const costoTotal=(p.cEditores||0)+(p.cDiseno||0)+(p.cCopy||0)+(p.cOtros||0);
-    const margenAmt=(p.ingreso||0)-costoTotal;
-    const margenPct=(p.ingreso||0)>0?(margenAmt/(p.ingreso||1)*100):0;
-    const d=new Date(p.date+'T12:00:00');
-    const periodo=`${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  // Projects can have p.fecha or p.date (legacy) — normalize
+  let filtered = projects.map(p=>({...p, _fecha: p.fecha||p.date||''}))
+    .sort((a,b)=>b._fecha.localeCompare(a._fecha));
+
+  if(filterClient==='__suelto__') filtered = filtered.filter(p=>!p.clientId);
+  else if(filterClient) filtered = filtered.filter(p=>p.clientId===filterClient);
+  if(filterYear) filtered = filtered.filter(p=>p._fecha.startsWith(filterYear));
+
+  const tbody = document.getElementById('pj-tbody');
+  if(!tbody) return;
+
+  tbody.innerHTML = filtered.map(p=>{
+    const cl = clients.find(x=>x.id===p.clientId);
+    const costoTotal = (p.cEditores||0)+(p.cDiseno||0)+(p.cCopy||0)+(p.cOtros||0);
+    const margenAmt  = (p.ingreso||0) - costoTotal;
+    const margenPct  = (p.ingreso||0)>0?(margenAmt/(p.ingreso||1)*100):100;
+    const d = new Date(p._fecha+'T12:00:00');
+    const periodo = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
     return`<tr>
       <td class="bold">${p.nombre}</td>
-      <td>${cl?cl.name:'<span style="color:var(--t3)">Suelto</span>'}</td>
-      <td class="mono">${fmtDate(p.date)}</td>
+      <td>${cl?cl.name:'<span style="color:var(--t3);font-size:11px">Suelto</span>'}</td>
+      <td class="mono">${fmtDate(p._fecha)}</td>
       <td><span class="proj-badge">${periodo}</span></td>
       <td class="r mono">${$f(p.ingreso||0)}</td>
       <td class="r mono" style="color:var(--t2)">${costoTotal>0?$f(costoTotal):'—'}</td>
@@ -2354,9 +2396,8 @@ function renderProyectos() {
       <td class="r"><span class="mpill ${margClass(margenPct)}">${pct(margenPct)}</span></td>
       <td><div class="btn-rm" onclick="deleteProyecto('${p.id}')">✕</div></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:20px;font-size:12px">Sin proyectos cargados</td></tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:20px;font-size:12px">Sin proyectos</td></tr>`;
 
-  // Preview margin
   updatePjPreview();
 }
 
@@ -2473,112 +2514,206 @@ function deleteFixedIncome(id) {
 // MÉTRICAS
 // ══════════════════════════════════════════════════════
 let chartMRR=null, chartMargin=null, chartCost=null, chartClients=null;
+let curMetTab='anual';
+
+function switchMetTab(tab) {
+  curMetTab = tab;
+  document.getElementById('met-view-anual').style.display   = tab==='anual'   ? 'block' : 'none';
+  document.getElementById('met-view-mensual').style.display  = tab==='mensual'  ? 'block' : 'none';
+  document.getElementById('met-tab-anual').classList.toggle('on',   tab==='anual');
+  document.getElementById('met-tab-mensual').classList.toggle('on',  tab==='mensual');
+  renderMetricas();
+}
 
 function getMonthMetrics(month, year) {
-  const activeClients = clients.filter(c=>c.active && clientActiveInMonth(c,month,year));
-  let mrr=0, cost=0, marg=0;
-  activeClients.forEach(c=>{
-    const r=calcClient(c,month,year);
-    mrr+=r.netCC; cost+=r.costoTotal; marg+=r.margenAmt;
-  });
-  // Add projects
-  const projs=projects.filter(p=>{
-    if(!p.date)return false;
-    const d=new Date(p.date+'T12:00:00');
+  // ── Real MRR = sum of actual payments for this period ──
+  const period = `${month}_${year}`;
+  const monthPays = payments.filter(p => p.period === period);
+  const mrr = monthPays.reduce((a,p) => a + (p.amount - (p.fees||0)), 0);
+
+  // Also add projects income for this month
+  const projs = projects.filter(p=>{
+    const f = p.fecha||p.date||'';
+    if(!f) return false;
+    const d = new Date(f+'T12:00:00');
     return d.getFullYear()===year && MONTHS[d.getMonth()]===month;
   });
-  const projIn=projs.reduce((a,p)=>a+(p.ingreso||0),0);
-  const projCost=projs.reduce((a,p)=>a+(p.cEditores||0)+(p.cDiseno||0)+(p.cCopy||0)+(p.cOtros||0),0);
-  mrr+=projIn; cost+=projCost; marg+=projIn-projCost;
-  const margPct=mrr>0?(marg/mrr*100):0;
-  const ticket=activeClients.length>0?mrr/activeClients.length:0;
-  const ltvAvg=activeClients.length>0?activeClients.reduce((a,c)=>a+clientLTV(c).total,0)/activeClients.length:0;
-  return{mrr,cost,marg,margPct,clients:activeClients.length,ticket,ltvAvg};
+  const projIn   = projs.reduce((a,p)=>a+(p.ingreso||0),0);
+  const projCost = projs.reduce((a,p)=>a+(p.cEditores||0)+(p.cDiseno||0)+(p.cCopy||0)+(p.cOtros||0),0);
+
+  // Add fixed incomes
+  const fiTotal = fixedIncomes.filter(fi=>fi.active!==false).reduce((a,fi)=>a+(fi.amount||0),0);
+
+  const totalMRR = mrr + projIn + fiTotal;
+
+  // Cost = sum of client costs for active clients this month
+  const activeClients = clients.filter(c=>c.active && clientActiveInMonth(c,month,year));
+  let cost=0;
+  activeClients.forEach(c=>{ cost+=calcClient(c,month,year).costoTotal; });
+  cost += projCost;
+
+  const marg = totalMRR - cost;
+  const margPct = totalMRR>0?(marg/totalMRR*100):0;
+  const ticket = activeClients.length>0?(totalMRR/activeClients.length):0;
+  const ltvAvg = activeClients.length>0
+    ? activeClients.reduce((a,c)=>a+clientLTV(c).total,0)/activeClients.length : 0;
+
+  return {mrr:totalMRR, cost, marg, margPct, clients:activeClients.length, ticket, ltvAvg};
 }
 
 function renderMetricas(){
-  document.getElementById('met-year-label').textContent=curYear;
+  // Sync year selector to curYear
+  const ySel = document.getElementById('met-year-sel');
+  if(ySel && parseInt(ySel.value) !== curYear) ySel.value = curYear;
+  const yearEl = document.getElementById('met-year-label');
+  if(yearEl) yearEl.textContent = curYear;
+
   const data=MONTHS.map(m=>({month:m,...getMonthMetrics(m,curYear)}));
 
-  // Annual KPIs
+  // ── ANNUAL KPIs (totals for the year) ──
   const totalMRR=data.reduce((a,d)=>a+d.mrr,0);
   const totalCost=data.reduce((a,d)=>a+d.cost,0);
   const totalMarg=data.reduce((a,d)=>a+d.marg,0);
   const avgMargPct=totalMRR>0?(totalMarg/totalMRR*100):0;
   const avgClients=data.reduce((a,d)=>a+d.clients,0)/12;
-  const avgTicket=data.filter(d=>d.clients>0).reduce((a,d)=>a+d.ticket,0)/(data.filter(d=>d.clients>0).length||1);
-  const maxMRR=Math.max(...data.map(d=>d.mrr));
+  const activeMths=data.filter(d=>d.clients>0);
+  const avgTicket=activeMths.length>0?activeMths.reduce((a,d)=>a+d.ticket,0)/activeMths.length:0;
+
+  // MRR trend: current month vs previous
   const curMonthIdx=MONTHS.indexOf(curMonth);
   const prevMRR=curMonthIdx>0?data[curMonthIdx-1].mrr:0;
   const curMRR=data[curMonthIdx].mrr;
   const mrrTrend=prevMRR>0?((curMRR-prevMRR)/prevMRR*100):0;
-  const trendHtml=v=>{
-    if(Math.abs(v)<1) return `<span class="trend-flat">→ sin cambio</span>`;
-    return v>0?`<span class="trend-up">↑ ${Math.abs(v).toFixed(1)}% vs mes ant.</span>`
-              :`<span class="trend-down">↓ ${Math.abs(v).toFixed(1)}% vs mes ant.</span>`;
-  };
+  const trendSpan=mrrTrend>1?`<span class="trend-up">↑ ${Math.abs(mrrTrend).toFixed(1)}%</span>`
+    :mrrTrend<-1?`<span class="trend-down">↓ ${Math.abs(mrrTrend).toFixed(1)}%</span>`
+    :`<span class="trend-flat">→ estable</span>`;
 
   document.getElementById('met-kpis').innerHTML=`
-    <div class="kpi hi"><div class="kpi-l">MRR Anual Total</div><div class="kpi-v">${$f(totalMRR)}</div><div class="kpi-s">${trendHtml(mrrTrend).replace(/class="[^"]*"/,'')}</div></div>
-    <div class="kpi grn"><div class="kpi-l">Margen Anual</div><div class="kpi-v">${$f(totalMarg)}</div><div class="kpi-s">${pct(avgMargPct)} promedio</div></div>
+    <div class="kpi hi"><div class="kpi-l">MRR Acumulado ${curYear}</div><div class="kpi-v">${$f(totalMRR)}</div><div class="kpi-s">12 meses</div></div>
+    <div class="kpi grn"><div class="kpi-l">Ganancia Acumulada</div><div class="kpi-v">${$f(totalMarg)}</div><div class="kpi-s">${pct(avgMargPct)} margen prom.</div></div>
     <div class="kpi"><div class="kpi-l">Ticket Promedio</div><div class="kpi-v">${$f(avgTicket)}</div><div class="kpi-s">por cliente/mes</div></div>
     <div class="kpi"><div class="kpi-l">Clientes Prom.</div><div class="kpi-v">${Math.round(avgClients)}</div><div class="kpi-s">activos por mes</div></div>`;
 
-  // Table
-  document.getElementById('met-tbody').innerHTML=data.map((d,i)=>{
-    const prev=i>0?data[i-1]:null;
-    const mrrDiff=prev&&prev.mrr>0?((d.mrr-prev.mrr)/prev.mrr*100):null;
-    const trendCell=mrrDiff===null?''
-      :mrrDiff>1?`<span class="trend-up">↑${Math.abs(mrrDiff).toFixed(0)}%</span>`
-      :mrrDiff<-1?`<span class="trend-down">↓${Math.abs(mrrDiff).toFixed(0)}%</span>`
-      :`<span class="trend-flat">→</span>`;
-    const isCurrentMonth = d.month===curMonth;
-    const rowStyle = isCurrentMonth ? 'background:rgba(191,22,34,.05);font-weight:700;' : '';
-    return`<tr style="${rowStyle}">
-      <td class="bold">${d.month} ${isCurrentMonth?'<span style="font-size:9px;color:var(--red2);font-family:var(--mono)">← actual</span>':''}</td>
-      <td class="r mono">${d.mrr>0?$f(d.mrr):'<span style="color:var(--t4)">—</span>'} ${trendCell}</td>
-      <td class="r mono">${d.cost>0?$f(d.cost):'<span style="color:var(--t4)">—</span>'}</td>
-      <td class="r mono" style="color:${d.marg>0?margColor(d.margPct):'var(--t4)'}">${d.marg>0?$f(d.marg):'—'}</td>
-      <td class="r"><span class="${d.margPct>0?'mpill '+margClass(d.margPct):'dim'}">${d.margPct>0?pct(d.margPct):'—'}</span></td>
-      <td class="r mono">${d.clients>0?d.clients:'<span style="color:var(--t4)">—</span>'}</td>
-      <td class="r mono">${d.ticket>0?$f(d.ticket):'<span style="color:var(--t4)">—</span>'}</td>
-      <td class="r mono">${d.ltvAvg>0?$f(d.ltvAvg):'<span style="color:var(--t4)">—</span>'}</td>
-    </tr>`;
-  }).join('');
+  // ── MONTHLY TAB ──
+  if(curMetTab === 'mensual') {
+    const mesLabel = document.getElementById('met-mes-label');
+    if(mesLabel) mesLabel.textContent = `${curMonth} ${curYear}`;
 
-  // Charts
+    // Real MRR = actual payments this month
+    const period = `${curMonth}_${curYear}`;
+    const monthPays = payments.filter(p=>p.period===period);
+    const realMRR = monthPays.reduce((a,p)=>a+(p.amount-(p.fees||0)),0);
+
+    // Projects + fixed income
+    const projs = projects.filter(p=>{ const f=p.fecha||p.date||''; if(!f)return false; const d=new Date(f+'T12:00:00'); return d.getFullYear()===curYear&&MONTHS[d.getMonth()]===curMonth; });
+    const projIn = projs.reduce((a,p)=>a+(p.ingreso||0),0);
+    const fiTotal = fixedIncomes.filter(fi=>fi.active!==false).reduce((a,fi)=>a+(fi.amount||0),0);
+    const mesMRR = realMRR + projIn + fiTotal;
+
+    const active = clients.filter(c=>c.active && clientActiveInMonth(c,curMonth,curYear));
+    let mesCost=0;
+    active.forEach(c=>{ mesCost+=calcClient(c,curMonth,curYear).costoTotal; });
+    const mesMarg = mesMRR - mesCost;
+    const mesMargPct = mesMRR>0?(mesMarg/mesMRR*100):0;
+
+    // Compare vs previous month real payments
+    const prevMIdx = MONTHS.indexOf(curMonth);
+    const prevM = prevMIdx>0?MONTHS[prevMIdx-1]:MONTHS[11];
+    const prevY = prevMIdx>0?curYear:curYear-1;
+    const prevPeriod = `${prevM}_${prevY}`;
+    const prevMRR = payments.filter(p=>p.period===prevPeriod).reduce((a,p)=>a+(p.amount-(p.fees||0)),0)
+      + projects.filter(p=>{ const f=p.fecha||p.date||''; if(!f)return false; const d=new Date(f+'T12:00:00'); return d.getFullYear()===prevY&&MONTHS[d.getMonth()]===prevM; }).reduce((a,p)=>a+(p.ingreso||0),0)
+      + fiTotal;
+
+    const mrrDiff = prevMRR>0?((mesMRR-prevMRR)/prevMRR*100):0;
+    const trendSpan = mrrDiff>1?`<span class="trend-up">↑ ${Math.abs(mrrDiff).toFixed(1)}% vs ${prevM}</span>`
+      :mrrDiff<-1?`<span class="trend-down">↓ ${Math.abs(mrrDiff).toFixed(1)}% vs ${prevM}</span>`
+      :`<span class="trend-flat">→ estable vs ${prevM}</span>`;
+
+    const ticket = active.length>0?(mesMRR/active.length):0;
+    const cobrados = active.filter(c=>getMonthData(c,curMonth,curYear).cobro==='paid').length;
+
+    document.getElementById('met-kpis-mes').innerHTML=`
+      <div class="kpi hi"><div class="kpi-l">MRR ${curMonth}</div><div class="kpi-v">${$f(mesMRR)}</div><div class="kpi-s">${trendSpan}</div></div>
+      <div class="kpi"><div class="kpi-l">Costo Operativo</div><div class="kpi-v">${$f(mesCost)}</div><div class="kpi-s">editores + fijos</div></div>
+      <div class="kpi grn"><div class="kpi-l">Margen $</div><div class="kpi-v">${$f(mesMarg)}</div><div class="kpi-s">${pct(mesMargPct)}</div></div>
+      <div class="kpi"><div class="kpi-l">Clientes Activos</div><div class="kpi-v">${active.length}</div><div class="kpi-s">${cobrados} cobrados</div></div>
+      <div class="kpi"><div class="kpi-l">Ticket Promedio</div><div class="kpi-v">${$f(ticket)}</div><div class="kpi-s">por cliente</div></div>`;
+
+    // Table by client
+    document.getElementById('met-mes-tbody').innerHTML = active
+      .map(c=>{ const r=calcClient(c,curMonth,curYear); const d=getMonthData(c,curMonth,curYear); return {c,r,d}; })
+      .sort((a,b)=>b.r.netCC-a.r.netCC)
+      .map(({c,r,d})=>`<tr>
+        <td class="bold" style="cursor:pointer" ondblclick="openClient('${c.id}')">${c.name}</td>
+        <td class="r mono">${$f(r.netCC)}</td>
+        <td class="r mono">${$f(r.costoTotal)}</td>
+        <td class="r mono" style="color:${margColor(r.margenPct)}">${$f(r.margenAmt)}</td>
+        <td class="r"><span class="mpill ${margClass(r.margenPct)}">${pct(r.margenPct)}</span></td>
+        <td class="r"><button class="pbadge ${d.cobro}" onclick="cycleCobro('${c.id}',event);renderMetricas()">${cobroLbl(d.cobro)}</button></td>
+      </tr>`).join('');
+
+    // Charts for monthly
+    const isDark=!document.body.classList.contains('light');
+    const gridColor=isDark?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';
+    const textColor=isDark?'#444':'#bbb';
+    const chartOpts = {
+      responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{backgroundColor:isDark?'#111':'#fff',titleColor:isDark?'#fff':'#000',bodyColor:isDark?'#888':'#555',borderColor:isDark?'#2a2a2a':'#e0e0e0',borderWidth:1}},
+      scales:{x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10,family:'JetBrains Mono'},callback:v=>'$'+Math.round(v).toLocaleString('es-AR')}},
+              y:{grid:{display:false},ticks:{color:isDark?'#777':'#999',font:{size:10,family:'JetBrains Mono'}}}}
+    };
+
+    const sorted = [...active].map(c=>({c,r:calcClient(c,curMonth,curYear)})).sort((a,b)=>b.r.netCC-a.r.netCC);
+    const cLabels = sorted.map(x=>x.c.name.split(' ')[0]);
+
+    const mkC=(id,ref,cfg)=>{ if(ref)ref.destroy(); const ctx=document.getElementById(id)?.getContext('2d'); return ctx?new Chart(ctx,cfg):null; };
+    chartMRR=mkC('chart-mes-clientes',chartMRR,{type:'bar',data:{labels:cLabels,datasets:[
+      {label:'MRR',data:sorted.map(x=>x.r.netCC),backgroundColor:'rgba(191,22,34,.45)',borderColor:'#bf1622',borderWidth:1,borderRadius:3}
+    ]},options:chartOpts});
+    chartMargin=mkC('chart-mes-margen',chartMargin,{type:'bar',data:{labels:cLabels,datasets:[
+      {label:'Margen %',data:sorted.map(x=>Math.round(x.r.margenPct)),
+       backgroundColor:sorted.map(x=>x.r.margenPct>=70?'rgba(74,222,128,.35)':x.r.margenPct>=50?'rgba(251,191,36,.35)':'rgba(191,22,34,.35)'),
+       borderColor:sorted.map(x=>x.r.margenPct>=70?'#4ade80':x.r.margenPct>=50?'#fbbf24':'#bf1622'),
+       borderWidth:1,borderRadius:3}
+    ]},options:{...chartOpts,scales:{...chartOpts.scales,x:{...chartOpts.scales.x,ticks:{...chartOpts.scales.x.ticks,callback:v=>v+'%'}}}}});
+    return;
+  }
+
+  // ── ANNUAL TAB — CHARTS ──
   const labels=SHORT_M;
   const isDark=!document.body.classList.contains('light');
-  const gridColor=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.07)';
-  const textColor=isDark?'#555':'#aaa';
+  const gridColor=isDark?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';
+  const textColor=isDark?'#444':'#bbb';
   const chartDefaults={
     responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{labels:{color:isDark?'#999':'#666',font:{size:11,family:'JetBrains Mono'}}},tooltip:{backgroundColor:isDark?'#1a1a1a':'#fff',titleColor:isDark?'#fff':'#000',bodyColor:isDark?'#999':'#555',borderColor:isDark?'#333':'#ddd',borderWidth:1}},
-    scales:{x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10,family:'JetBrains Mono'}}},y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10,family:'JetBrains Mono'},callback:v=>'$'+Math.round(v).toLocaleString('es-AR')}}}
+    plugins:{legend:{labels:{color:isDark?'#777':'#888',font:{size:11,family:'JetBrains Mono'}}},
+      tooltip:{backgroundColor:isDark?'#111':'#fff',titleColor:isDark?'#fff':'#000',bodyColor:isDark?'#888':'#555',borderColor:isDark?'#2a2a2a':'#e0e0e0',borderWidth:1}},
+    scales:{x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10,family:'JetBrains Mono'}}},
+            y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10,family:'JetBrains Mono'},callback:v=>'$'+Math.round(v).toLocaleString('es-AR')}}}
   };
-
   const mkChart=(id,ref,cfg)=>{
-    if(ref) ref.destroy();
+    if(ref)ref.destroy();
     const ctx=document.getElementById(id)?.getContext('2d');
-    if(!ctx) return null;
+    if(!ctx)return null;
     return new Chart(ctx,cfg);
   };
 
   chartMRR=mkChart('chart-mrr',chartMRR,{type:'bar',data:{labels,datasets:[
-    {label:'MRR',data:data.map(d=>d.mrr),backgroundColor:'rgba(191,22,34,.5)',borderColor:'#bf1622',borderWidth:1,borderRadius:3},
-    {label:'Margen $',data:data.map(d=>d.marg),backgroundColor:'rgba(74,222,128,.3)',borderColor:'#4ade80',borderWidth:1,borderRadius:3,type:'bar'}
+    {label:'MRR',data:data.map(d=>d.mrr),backgroundColor:'rgba(191,22,34,.45)',borderColor:'#bf1622',borderWidth:1,borderRadius:3},
+    {label:'Margen $',data:data.map(d=>d.marg),backgroundColor:'rgba(74,222,128,.25)',borderColor:'#4ade80',borderWidth:1,borderRadius:3}
   ]},options:{...chartDefaults}});
 
   chartMargin=mkChart('chart-margin',chartMargin,{type:'line',data:{labels,datasets:[
-    {label:'Margen %',data:data.map(d=>Math.round(d.margPct)),borderColor:'#bf1622',backgroundColor:'rgba(191,22,34,.1)',tension:.3,fill:true,pointBackgroundColor:'#bf1622',pointRadius:3}
+    {label:'Margen %',data:data.map(d=>Math.round(d.margPct)),borderColor:'#bf1622',backgroundColor:'rgba(191,22,34,.08)',tension:.35,fill:true,pointBackgroundColor:'#bf1622',pointRadius:3}
   ]},options:{...chartDefaults,scales:{...chartDefaults.scales,y:{...chartDefaults.scales.y,ticks:{...chartDefaults.scales.y.ticks,callback:v=>v+'%'}}}}});
 
   chartCost=mkChart('chart-cost',chartCost,{type:'line',data:{labels,datasets:[
-    {label:'Costo Op.',data:data.map(d=>d.cost),borderColor:'#fb923c',backgroundColor:'rgba(251,146,60,.1)',tension:.3,fill:true,pointBackgroundColor:'#fb923c',pointRadius:3}
+    {label:'Costo Op.',data:data.map(d=>d.cost),borderColor:'#fb923c',backgroundColor:'rgba(251,146,60,.08)',tension:.35,fill:true,pointBackgroundColor:'#fb923c',pointRadius:3}
   ]},options:{...chartDefaults}});
 
   chartClients=mkChart('chart-clients',chartClients,{type:'bar',data:{labels,datasets:[
-    {label:'Clientes activos',data:data.map(d=>d.clients),backgroundColor:'rgba(191,22,34,.4)',borderColor:'#bf1622',borderWidth:1,borderRadius:3}
+    {label:'Clientes activos',data:data.map(d=>d.clients),backgroundColor:'rgba(191,22,34,.35)',borderColor:'#bf1622',borderWidth:1,borderRadius:3}
   ]},options:{...chartDefaults,scales:{...chartDefaults.scales,y:{...chartDefaults.scales.y,ticks:{...chartDefaults.scales.y.ticks,callback:v=>v}}}}});
 }
 
