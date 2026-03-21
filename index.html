@@ -869,17 +869,27 @@ function makeClient(name, cycleDay, qty, mrr, svcs, notes, startDate) {
 // IMPORT HISTORY — runs only when user clicks "Importar Historial"
 // ══════════════════════════════════════════════════════
 function addInactiveClient(name, cycleDay, mrr, qty, svcs) {
+  // If already exists just mark inactive
   const existing = clients.find(c=>c.name===name);
-  if(existing) { existing.active=false; existing.inactiveSince='2024'; return; }
+  if(existing) {
+    existing.active = false;
+    existing.inactiveSince = existing.inactiveSince || '2024';
+    return;
+  }
+  // Create new inactive client
   const c = blankClient(name, cycleDay, 'Transferencia USD');
   c.services = Object.assign({contenido:false,ads:false,longform:false,email:false}, svcs);
   c.contenidoQty = qty;
   c.active = false;
   c.inactiveSince = '2024';
-  MONTHS.forEach(m=>YEARS.forEach(y=>{
-    const d=getMonthData(c,m,y);
-    if(svcs.contenido) d.ingresos.contenido={qty,price:mrr/qty};
-  }));
+  c.notes = mrr > 0 ? `MRR histórico: $${mrr}/mes` : '';
+  // Pre-fill MRR for reference
+  if(qty > 0 && svcs.contenido) {
+    MONTHS.forEach(m => YEARS.forEach(y => {
+      const d = getMonthData(c, m, y);
+      d.ingresos.contenido = {qty, price: Math.round(mrr/qty * 100)/100};
+    }));
+  }
   clients.push(c);
 }
 
@@ -1279,9 +1289,6 @@ function importHistorial() {
     {id:'pj_phist_20260305_273',nombre:'Charla Interior Design Experiencia - España',fecha:'2026-03-05',ingreso:273.0},
     {id:'pj_phist_20260306_1200',nombre:'Benja Luquez - Asesoria 1a1',fecha:'2026-03-06',ingreso:1200.0},
     {id:'pj_phist_20260309_175',nombre:'Clase Capacitacion Colegio de Arquitectos San Luis',fecha:'2026-03-09',ingreso:175.0},
-    {id:'pj_phist_20260310_750',nombre:'Angie Ojeda - 15 publicaciones',fecha:'2026-03-10',ingreso:750.0},
-    {id:'pj_phist_20260312_750',nombre:'Placarq - 15 piezas',fecha:'2026-03-12',ingreso:750.0},
-    {id:'pj_phist_20260314_900',nombre:'Tobi Odentalagency - 15 piezas',fecha:'2026-03-14',ingreso:900.0},
     {id:'pj_phist_20260331_323',nombre:'Vainilla Digital',fecha:'2026-03-31',ingreso:323.0},
   ];
   histProjects.forEach(p=>{
@@ -1350,7 +1357,7 @@ function seedFixedIncomes() {
 function seedClients() {
   clients = [
     makeClient('Aldana Bonifazi',    4,  12, {contenido:46.67},  {contenido:true},              '12 piezas · $560/mes'),
-    makeClient('Metier Studio',      7,  20, {contenido:800, ads:300}, {contenido:true,ads:true}, '20 piezas + ADS · $1100/mes'),
+    makeClient('Metier Studio',      7,  20, {contenido:40, ads:400}, {contenido:true,ads:true}, '20 piezas × $40 + ADS $400 · $1200/mes'),
     makeClient('Flor Hermann',       16, 15, {contenido:46.67},  {contenido:true},              '15 piezas · $700/mes'),
     makeClient('La Maria',           11, 20, {contenido:45},     {contenido:true},              '20 piezas · $900/mes'),
     makeClient('Compliance Exitoso', 13, 15, {contenido:48},     {contenido:true},              '15 piezas · $720/mes (3 meses adelantados)'),
@@ -1383,18 +1390,18 @@ function seedClients() {
   basaarq.startDate = '2026-02';
   clients.push(basaarq);
 
-  // Angie Ojeda — contenido, not started yet
-  const angieO = makeClient('Angie Ojeda', 1, 15, {contenido:50}, {contenido:true}, '15 piezas · $750/mes — pendiente inicio');
+  // Angie Ojeda — 15 piezas $750/mes, not started yet
+  const angieO = makeClient('Angie Ojeda', 1, 15, {contenido:50}, {contenido:true}, '15 piezas · $750/mes');
   angieO.startDate = null;
   clients.push(angieO);
 
-  // Placarq — contenido, not started yet
-  const placarq = makeClient('Placarq', 1, 15, {contenido:50}, {contenido:true}, '15 piezas · $750/mes — pendiente inicio');
+  // Placarq — 15 piezas $750/mes, not started yet
+  const placarq = makeClient('Placarq', 1, 15, {contenido:50}, {contenido:true}, '15 piezas · $750/mes');
   placarq.startDate = null;
   clients.push(placarq);
 
-  // Odental Agency — contenido, not started yet
-  const odental = makeClient('Odental Agency', 1, 15, {contenido:60}, {contenido:true}, '15 piezas · $900/mes — pendiente inicio');
+  // Odental Agency — 15 piezas $900/mes, not started yet
+  const odental = makeClient('Odental Agency', 1, 15, {contenido:60}, {contenido:true}, '15 piezas · $900/mes');
   odental.startDate = null;
   clients.push(odental);
 }
