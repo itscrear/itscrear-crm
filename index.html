@@ -311,10 +311,25 @@ body.light .inactive-row td { opacity:.5; }
   transition:all .15s;user-select:none;
 }
 .theme-toggle:hover{color:var(--t1);}
+
+/* ── MÉTRICAS ── */
+.metrics-chart-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:7px;padding:16px;margin-bottom:12px;}
+.chart-container{position:relative;height:220px;margin-top:12px;}
+.met-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:900px){.met-kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.trend-up{color:var(--grn);font-size:10px;font-family:var(--mono);}
+.trend-down{color:var(--red2);font-size:10px;font-family:var(--mono);}
+.trend-flat{color:var(--t3);font-size:10px;font-family:var(--mono);}
+
+/* ── INGRESOS FIJOS ── */
+.if-row{display:grid;grid-template-columns:1fr 120px 100px 80px 28px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--b1);}
+.if-row:last-child{border-bottom:none;}
+.if-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;font-family:var(--mono);background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);color:#60a5fa;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -344,10 +359,12 @@ body.light .inactive-row td { opacity:.5; }
   <button class="sb-btn" onclick="goPage('equipo')">◉ Equipo</button>
   <button class="sb-btn" onclick="goPage('comparativa')">⊞ Comparativa</button>
   <button class="sb-btn" onclick="goPage('proyectos')">◇ Proyectos</button>
+  <button class="sb-btn" onclick="goPage('metricas')">▦ Métricas</button>
   <div class="sb-sec">Clientes Activos</div>
   <div class="sb-clients" id="sb-clients"></div>
   <div class="sb-footer">
     <button class="btn-new" onclick="openNewClient()">+ Nuevo Cliente</button>
+    <button onclick="importHistorial()" style="width:100%;margin-top:6px;padding:7px;border-radius:5px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);color:var(--ylw);font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">↓ Importar Historial</button>
     <button onclick="resetAllData()" style="width:100%;margin-top:6px;padding:7px;border-radius:5px;background:transparent;border:1px solid var(--b2);color:var(--t3);font-family:var(--font);font-size:11px;cursor:pointer;" onmouseover="this.style.color='var(--red2)'" onmouseout="this.style.color='var(--t3)'">↺ Resetear datos</button>
   </div>
 </aside>
@@ -398,6 +415,14 @@ body.light .inactive-row td { opacity:.5; }
           <tbody id="dash-tbody"></tbody>
         </table>
         </div>
+      </div>
+      <!-- INGRESOS FIJOS -->
+      <div class="card" id="fixed-income-card" style="margin-bottom:12px">
+        <div class="card-head">
+          <span class="card-title">Ingresos Recurrentes <span style="color:var(--t3);font-size:9px">(no clientes)</span></span>
+          <button class="btn btn-g" style="font-size:11px;padding:5px 10px" onclick="openNewFixedIncome()">+ Agregar</button>
+        </div>
+        <div style="padding:0 15px 4px" id="fixed-income-list"></div>
       </div>
       <!-- INACTIVOS -->
       <div class="card" id="inactive-card" style="display:none">
@@ -559,6 +584,53 @@ body.light .inactive-row td { opacity:.5; }
             <th class="r">Margen $</th><th class="r">Margen %</th><th></th>
           </tr></thead>
           <tbody id="pj-tbody"></tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- MÉTRICAS -->
+    <div class="page" id="page-metricas">
+      <!-- KPIs del año -->
+      <div class="met-kpi-grid" id="met-kpis"></div>
+      <!-- Charts -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="metrics-chart-wrap">
+          <div class="card-title">MRR & Margen $ mensual</div>
+          <div class="chart-container"><canvas id="chart-mrr"></canvas></div>
+        </div>
+        <div class="metrics-chart-wrap">
+          <div class="card-title">Margen % mensual</div>
+          <div class="chart-container"><canvas id="chart-margin"></canvas></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="metrics-chart-wrap">
+          <div class="card-title">Costo Operativo mensual</div>
+          <div class="chart-container"><canvas id="chart-cost"></canvas></div>
+        </div>
+        <div class="metrics-chart-wrap">
+          <div class="card-title">Clientes activos por mes</div>
+          <div class="chart-container"><canvas id="chart-clients"></canvas></div>
+        </div>
+      </div>
+      <!-- Table -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">Resumen mensual · <span id="met-year-label" style="color:var(--red2)"></span></span></div>
+        <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Mes</th>
+            <th class="r">MRR</th>
+            <th class="r">Costo Op.</th>
+            <th class="r">Margen $</th>
+            <th class="r">Margen %</th>
+            <th class="r">Clientes</th>
+            <th class="r">Ticket Prom.</th>
+            <th class="r">LTV Prom.</th>
+          </tr></thead>
+          <tbody id="met-tbody"></tbody>
         </table>
         </div>
       </div>
@@ -747,6 +819,7 @@ function inferPeriod(dateStr, cycleDay) {
 let clients = [];
 let payments = [];
 let projects = [];
+let fixedIncomes = []; // {id, name, amount, method, active}
 
 function makeClient(name, cycleDay, qty, mrr, svcs, notes, startDate) {
   const c = blankClient(name, cycleDay, 'Transferencia USD');
@@ -763,6 +836,224 @@ function makeClient(name, cycleDay, qty, mrr, svcs, notes, startDate) {
     if(svcs.email)     d.ingresos.email     = {qty: 1, price: mrr.email || 0};
   }));
   return c;
+}
+
+
+
+// ══════════════════════════════════════════════════════
+// IMPORT HISTORY — runs only when user clicks "Importar Historial"
+// ══════════════════════════════════════════════════════
+function addInactiveClient(name, cycleDay, mrr, qty, svcs) {
+  const existing = clients.find(c=>c.name===name);
+  if(existing) { existing.active=false; existing.inactiveSince='2024'; return; }
+  const c = blankClient(name, cycleDay, 'Transferencia USD');
+  c.services = Object.assign({contenido:false,ads:false,longform:false,email:false}, svcs);
+  c.contenidoQty = qty;
+  c.active = false;
+  c.inactiveSince = '2024';
+  MONTHS.forEach(m=>YEARS.forEach(y=>{
+    const d=getMonthData(c,m,y);
+    if(svcs.contenido) d.ingresos.contenido={qty,price:mrr/qty};
+  }));
+  clients.push(c);
+}
+
+function importHistorial() {
+  if(!confirm('¿Importar 74 pagos históricos de Q4 2025 y Q1 2026 + 6 clientes inactivos? Esto no borra tus datos actuales.')) return;
+  const findId = name => clients.find(c=>c.name===name)?.id || null;
+
+  // Add inactive clients first
+  addInactiveClient('Vicky Becci',5,900,20,{'contenido': true});
+  addInactiveClient('Cherry Mediavilla',17,1200,30,{'contenido': true});
+  addInactiveClient('Gofurgo',15,1300,30,{'contenido': true});
+  addInactiveClient('Belu Bielewicz',24,800,20,{'contenido': true});
+  addInactiveClient('Dakota Estudio',6,750,15,{'contenido': true});
+  addInactiveClient('Taller 215',6,700,15,{'contenido': true});
+
+  // Add payments (skip duplicates)
+  const existingIds = new Set(payments.map(p=>p.id));
+  payments.push({id:'phist_2025_10_04_700_Aldan',date:'2025-10-04',clientId:findId('Aldana Bonifazi'),amount:700.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'phist_2025_10_05_2890_Vicky',date:'2025-10-05',clientId:findId('Vicky Becci'),amount:2890.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Vicky Becci'});
+  payments.push({id:'phist_2025_10_06_750_Dakot',date:'2025-10-06',clientId:findId('Dakota Estudio'),amount:750.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Dakota Estudio - 15 contenidos'});
+  payments.push({id:'phist_2025_10_07_1200_Metie',date:'2025-10-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'phist_2025_10_08_350_Langu',date:'2025-10-08',clientId:findId('Language Journeys'),amount:350.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mentoriship Ads - Language Journeys'});
+  payments.push({id:'phist_2025_10_14_580_Gofur',date:'2025-10-14',clientId:findId('Gofurgo'),amount:580.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Gofurgo - 15 Contenido 500 EUR'});
+  payments.push({id:'phist_2025_10_15_700_Talle',date:'2025-10-15',clientId:findId('Taller 215'),amount:700.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Taller 215 - 15 contenidos'});
+  payments.push({id:'phist_2025_10_23_1800_Mateo',date:'2025-10-23',clientId:findId('Mateo Quaintenne'),amount:1800.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mateo Quainteanne'});
+  payments.push({id:'phist_2025_10_24_800_Belu',date:'2025-10-24',clientId:findId('Belu Bielewicz'),amount:800.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Belu Bielewicz - 20 Contenidos'});
+  payments.push({id:'phist_2025_10_26_700_Flor',date:'2025-10-26',clientId:findId('Flor Hermann'),amount:700.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Flor Hermann - 15 piezas de contenido'});
+  payments.push({id:'phist_2025_10_27_60_Langu',date:'2025-10-27',clientId:findId('Language Journeys'),amount:60.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Language Journey - 2 Ads'});
+  payments.push({id:'phist_2025_10_29_1890_Langu',date:'2025-10-29',clientId:findId('Language Journeys'),amount:1890.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Language Journeys - 15 piezas x 3 meses'});
+  payments.push({id:'phist_2025_10_28_1200_Cherr',date:'2025-10-28',clientId:findId('Cherry Mediavilla'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Cherry Mediavilla - 30 piezas'});
+  payments.push({id:'phist_2025_10_30_750_Lucia',date:'2025-10-30',clientId:findId('Lucia Armstrong'),amount:750.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Lucia Armstrong - 15 piezas'});
+  payments.push({id:'phist_2025_10_31_400_Vicky',date:'2025-10-31',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'phist_2025_11_04_700_Aldan',date:'2025-11-04',clientId:findId('Aldana Bonifazi'),amount:700.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'phist_2025_11_07_1200_Metie',date:'2025-11-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'phist_2025_11_08_410_Langu',date:'2025-11-08',clientId:findId('Language Journeys'),amount:410.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mentoriship Ads - Language Journeys'});
+  payments.push({id:'phist_2025_11_11_750_Anabe',date:'2025-11-11',clientId:findId('Anabella Rabinovich'),amount:750.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Anabella Rabinovich - 15 piezas'});
+  payments.push({id:'phist_2025_11_14_700_Talle',date:'2025-11-14',clientId:findId('Taller 215'),amount:700.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Taller 215 - 15 contenidos'});
+  payments.push({id:'phist_2025_11_28_1800_Mateo',date:'2025-11-28',clientId:findId('Mateo Quaintenne'),amount:1800.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mateo Quanteianne'});
+  payments.push({id:'phist_2025_11_30_400_Vicky',date:'2025-11-30',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'phist_2025_12_02_300_DenD',date:'2025-12-02',clientId:findId('Den Dvorkin'),amount:300.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Ads - Den Dvorkin'});
+  payments.push({id:'phist_2025_12_04_700_Aldan',date:'2025-12-04',clientId:findId('Aldana Bonifazi'),amount:700.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'phist_2025_12_05_1100_Metie',date:'2025-12-05',clientId:findId('Metier Studio'),amount:1100.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Produccion Metier'});
+  payments.push({id:'phist_2025_12_06_750_Marco',date:'2025-12-06',clientId:findId('Marconi Silva Arquitectos'),amount:750.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Marconi Silva Arquitectos - 15 publicaciones'});
+  payments.push({id:'phist_2025_12_07_1200_Metie',date:'2025-12-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'phist_2025_12_11_750_Eugen',date:'2025-12-11',clientId:findId('Eugenia Cats'),amount:750.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Eugenia Cats - 15 piezas de contenido'});
+  payments.push({id:'phist_2025_12_17_250_Vicky',date:'2025-12-17',clientId:findId('Vicky Becci'),amount:250.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'10 ads sin IA - Vicky Becci'});
+  payments.push({id:'phist_2025_12_24_360_Vicky',date:'2025-12-24',clientId:findId('Vicky Becci'),amount:360.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Vicky Becci - contenido de diciembre'});
+  payments.push({id:'phist_2025_12_28_750_Lucia',date:'2025-12-28',clientId:findId('Lucia Armstrong'),amount:750.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Lucia Armstrong - 15 piezas'});
+  payments.push({id:'phist_2025_12_30_1800_Mateo',date:'2025-12-30',clientId:findId('Mateo Quaintenne'),amount:1800.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Mateo Quanteianne'});
+  payments.push({id:'phist_2025_12_31_400_Vicky',date:'2025-12-31',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'phist_2026_01_03_750_Anabe',date:'2026-01-03',clientId:findId('Anabella Rabinovich'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Anabella Rabinovich - 15 piezas'});
+  payments.push({id:'phist_2026_01_04_560_Aldan',date:'2026-01-04',clientId:findId('Aldana Bonifazi'),amount:560.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'phist_2026_01_07_1200_Metie',date:'2026-01-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'phist_2026_01_08_1000_Vicky',date:'2026-01-08',clientId:findId('Vicky Becci'),amount:1000.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Vicky Becci - 20 piezas x 3 meses (1/2)'});
+  payments.push({id:'phist_2026_01_09_450_Eugen',date:'2026-01-09',clientId:findId('Eugenia Cats'),amount:450.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Ads - Eugenia Cats'});
+  payments.push({id:'phist_2026_01_12_2160_Compl',date:'2026-01-12',clientId:findId('Compliance Exitoso'),amount:2160.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Compliance Exitoso - 3 meses 15 contenidps'});
+  payments.push({id:'phist_2026_01_13_700_Flor',date:'2026-01-13',clientId:findId('Flor Hermann'),amount:700.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Flor Hermann - 15 piezas de contenido'});
+  payments.push({id:'phist_2026_01_14_900_LaMa',date:'2026-01-14',clientId:findId('La Maria'),amount:900.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'La Maria - 20 piezas de contenido'});
+  payments.push({id:'phist_2026_01_17_400_Vicky',date:'2026-01-17',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'phist_2026_01_19_250_Mateo',date:'2026-01-19',clientId:findId('Mateo Quaintenne'),amount:250.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'4 long form - Mateo Quainntenne'});
+  payments.push({id:'phist_2026_01_20_750_Build',date:'2026-01-20',clientId:findId('Build a Home'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'15 piezas - Build a Home'});
+  payments.push({id:'phist_2026_01_21_1000_Eugen',date:'2026-01-21',clientId:findId('Eugenia Cats'),amount:1000.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Produccion 1 dia - Eugenia Cats'});
+  payments.push({id:'phist_2026_01_22_750_Hatch',date:'2026-01-22',clientId:findId('Hatch Arquitectura'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Hatch Arquitectura - 15 piezas'});
+  payments.push({id:'phist_2026_01_23_150_Vicky',date:'2026-01-23',clientId:findId('Vicky Becci'),amount:150.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'1 Long form - Vicky Becci'});
+  payments.push({id:'phist_2026_01_24_700_Talle',date:'2026-01-24',clientId:findId('Taller 215'),amount:700.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Taller 215 - 15 publicaciones'});
+  payments.push({id:'phist_2026_01_25_314_DenD',date:'2026-01-25',clientId:findId('Den Dvorkin'),amount:314.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Ads - Den Dvorkin'});
+  payments.push({id:'phist_2026_01_26_2010_Langu',date:'2026-01-26',clientId:findId('Language Journeys'),amount:2010.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Language Journeys - 15 piezas x 3 meses'});
+  payments.push({id:'phist_2026_01_27_1800_Mateo',date:'2026-01-27',clientId:findId('Mateo Quaintenne'),amount:1800.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Mateo Quanteianne'});
+  payments.push({id:'phist_2026_01_28_750_Lucia',date:'2026-01-28',clientId:findId('Lucia Armstrong'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Lucia Armstrong - 15 piezas'});
+  payments.push({id:'phist_2026_01_29_750_Marco',date:'2026-01-29',clientId:findId('Marconi Silva Arquitectos'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Marconi Silva Arquitectos - 15 publicaciones'});
+  payments.push({id:'phist_2026_01_30_750_Eugen',date:'2026-01-30',clientId:findId('Eugenia Cats'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Eugenia Cats - 15 publicaciones'});
+  payments.push({id:'phist_2026_02_03_1050_MAAr',date:'2026-02-03',clientId:findId('MA Arquitectura'),amount:1050.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'MA Arquitectura - 15 piezas + anuncios'});
+  payments.push({id:'phist_2026_02_04_560_Aldan',date:'2026-02-04',clientId:findId('Aldana Bonifazi'),amount:560.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Aldana Bonifazi - 12 contenidos'});
+  payments.push({id:'phist_2026_02_07_1200_Metie',date:'2026-02-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'phist_2026_02_10_2100_Modul',date:'2026-02-10',clientId:findId('Modula Estudio'),amount:2100.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Modula Estudio - 15 contenidos x 3 meses'});
+  payments.push({id:'phist_2026_02_15_75_Mateo',date:'2026-02-15',clientId:findId('Mateo Quaintenne'),amount:75.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'VSL - Mateo Quaintenne'});
+  payments.push({id:'phist_2026_02_18_150_DenD',date:'2026-02-18',clientId:findId('Den Dvorkin'),amount:150.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Edicion 10 videos - Den Dvorkin'});
+  payments.push({id:'phist_2026_02_20_2270_Angie',date:'2026-02-20',clientId:findId('Angieylu'),amount:2270.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Angie y Lu - 30 piezas + long form'});
+  payments.push({id:'phist_2026_02_21_105_Mateo',date:'2026-02-21',clientId:findId('Mateo Quaintenne'),amount:105.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'3 ads de IA - Mateo Quaintenne'});
+  payments.push({id:'phist_2026_02_22_105_Mateo',date:'2026-02-22',clientId:findId('Mateo Quaintenne'),amount:105.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'3 ads de creadoras - Mateo Quaintenne'});
+  payments.push({id:'phist_2026_02_23_750_Pasio',date:'2026-02-23',clientId:findId('Pasion Retail'),amount:750.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Passion Retail - 15 contenidos'});
+  payments.push({id:'phist_2026_02_24_700_Flor',date:'2026-02-24',clientId:findId('Flor Hermann'),amount:700.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Flor Hermann - 15 piezas de contenido 15/02'});
+  payments.push({id:'phist_2026_02_25_300_DenD',date:'2026-02-25',clientId:findId('Den Dvorkin'),amount:300.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Ads - Den Dvorkin'});
+  payments.push({id:'phist_2026_02_26_2340_Mateo',date:'2026-02-26',clientId:findId('Mateo Quaintenne'),amount:2340.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Mateo Quanteianne'});
+  payments.push({id:'phist_2026_02_27_750_Lucia',date:'2026-02-27',clientId:findId('Lucia Armstrong'),amount:750.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Lucia Armstrong - 15 piezas'});
+  payments.push({id:'phist_2026_02_28_750_Eugen',date:'2026-02-28',clientId:findId('Eugenia Cats'),amount:750.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Eugenia Cats - 15 publicaciones'});
+  payments.push({id:'phist_2026_03_04_560_Aldan',date:'2026-03-04',clientId:findId('Aldana Bonifazi'),amount:560.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Aldana Bonifazi - 12 contenidos'});
+  payments.push({id:'phist_2026_03_11_900_LaMa',date:'2026-03-11',clientId:findId('La Maria'),amount:900.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'La Maria - 20 piezas de contenido'});
+  payments.push({id:'phist_2026_03_13_750_Hatch',date:'2026-03-13',clientId:findId('Hatch Arquitectura'),amount:750.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Hatch Arquitectura - 15 piezas'});
+  payments.push({id:'phist_2026_03_17_450_Angie',date:'2026-03-17',clientId:findId('Angieylu'),amount:450.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Edicion 100 videos Angieylu'});
+  payments.push({id:'phist_2026_03_20_300_Marco',date:'2026-03-20',clientId:findId('Marconi Silva Arquitectos'),amount:300.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Marconi Silva Arquitectos - 6 publicaciones'});
+
+  // Deduplicate payments
+  const seen = new Set();
+  payments = payments.filter(p=>seen.has(p.id)?false:seen.add(p.id));
+
+  // Add historical projects (skip duplicates)
+  const existingPjIds = new Set(projects.map(p=>p.id));
+  const histProjects = [
+    {id:'pj_hist_20251013_0',nombre:'Multicuenta (Vicky Becci)',fecha:'2025-10-13',ingreso:1500},
+    {id:'pj_hist_20251025_1',nombre:'Video AMC UGC',fecha:'2025-10-25',ingreso:175},
+    {id:'pj_hist_20251020_3',nombre:'Lanzamiento Vicky',fecha:'2025-10-20',ingreso:1000},
+    {id:'pj_hist_20251110_5',nombre:'Call 1a1 - Fran y Sebas',fecha:'2025-11-10',ingreso:150},
+    {id:'pj_hist_20251112_6',nombre:'7 hooks con IA - Vicky',fecha:'2025-11-12',ingreso:70},
+    {id:'pj_hist_20251116_7',nombre:'Sketchup Reel + historia',fecha:'2025-11-16',ingreso:300},
+    {id:'pj_hist_20251118_8',nombre:'Modificacion 4 ads - Vicky',fecha:'2025-11-18',ingreso:40},
+    {id:'pj_hist_20251123_9',nombre:'Publicidad Grid Studio',fecha:'2025-11-23',ingreso:554},
+    {id:'pj_hist_20251124_10',nombre:'AMC Cortinas',fecha:'2025-11-24',ingreso:100},
+    {id:'pj_hist_20251125_11',nombre:'Ads Vicky',fecha:'2025-11-25',ingreso:240},
+    {id:'pj_hist_20251126_12',nombre:'Testimoniales Paula + Lucia',fecha:'2025-11-26',ingreso:100},
+    {id:'pj_hist_20251127_13',nombre:'Long Form 2 Vicky',fecha:'2025-11-27',ingreso:300},
+    {id:'pj_hist_20251128_14',nombre:'Lanzamiento Mateo Quanteianne',fecha:'2025-11-28',ingreso:1800},
+    {id:'pj_hist_20251201_15',nombre:'Sales Partner',fecha:'2025-12-01',ingreso:4000},
+    {id:'pj_hist_20251217_16',nombre:'10 ads sin IA - Vicky',fecha:'2025-12-17',ingreso:250},
+    {id:'pj_hist_20251218_17',nombre:'Edicion Thank You Page - Mateo',fecha:'2025-12-18',ingreso:25},
+    {id:'pj_hist_20251219_18',nombre:'27 clases Mateo Edicion',fecha:'2025-12-19',ingreso:270},
+    {id:'pj_hist_20251221_19',nombre:'Facebook - AGOS',fecha:'2025-12-21',ingreso:160},
+    {id:'pj_hist_20251222_20',nombre:'6 clases programa Vicky',fecha:'2025-12-22',ingreso:600},
+    {id:'pj_hist_20251224_21',nombre:'Contenido diciembre - Vicky',fecha:'2025-12-24',ingreso:360},
+    {id:'pj_hist_20251230_22',nombre:'Lanzamiento Mateo (Dic)',fecha:'2025-12-30',ingreso:1800},
+    {id:'pj_hist_20251231_23',nombre:'Mentoria Vicky (Dic)',fecha:'2025-12-31',ingreso:400},
+    {id:'pj_hist_20260111_24',nombre:'Edicion VSL - Mateo',fecha:'2026-01-11',ingreso:75},
+    {id:'pj_hist_20260116_25',nombre:'Landing Page - Basaarq',fecha:'2026-01-16',ingreso:550},
+    {id:'pj_hist_20260117_26',nombre:'Mentoria Vicky (Ene)',fecha:'2026-01-17',ingreso:400},
+    {id:'pj_hist_20260118_27',nombre:'Branding - Virginia Cismondi',fecha:'2026-01-18',ingreso:325},
+    {id:'pj_hist_20260119_28',nombre:'4 Long Form - Mateo',fecha:'2026-01-19',ingreso:250},
+    {id:'pj_hist_20260121_29',nombre:'Produccion 1 dia - Eugenia Cats',fecha:'2026-01-21',ingreso:1000},
+    {id:'pj_hist_20260131_30',nombre:'Ads - Basaarq (Ene)',fecha:'2026-01-31',ingreso:400},
+    {id:'pj_hist_20260213_31',nombre:'6 Ads Mateo Masterclass',fecha:'2026-02-13',ingreso:210},
+    {id:'pj_hist_20260214_32',nombre:'3 Ads Mateo Masterclass',fecha:'2026-02-14',ingreso:105},
+    {id:'pj_hist_20260216_33',nombre:'Charla SAGOSA',fecha:'2026-02-16',ingreso:400},
+    {id:'pj_hist_20260217_34',nombre:'Grid Studio - reel + historias',fecha:'2026-02-17',ingreso:450},
+    {id:'pj_hist_20260219_35',nombre:'Mica Asesora de Imagen',fecha:'2026-02-19',ingreso:250},
+    {id:'pj_hist_20260305_36',nombre:'Charla Interior Design España',fecha:'2026-03-05',ingreso:273},
+    {id:'pj_hist_20260306_37',nombre:'Benja Luquez - Asesoria',fecha:'2026-03-06',ingreso:1200},
+    {id:'pj_hist_20260309_38',nombre:'Clase Colegio Arquitectos SL',fecha:'2026-03-09',ingreso:175},
+    {id:'pj_hist_20260331_39',nombre:'Vainilla Digital',fecha:'2026-03-31',ingreso:323},
+  ];
+  histProjects.forEach(p=>{
+    if(!existingPjIds.has(p.id))
+      projects.push({...p,clientId:null,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  });
+
+  saveData();
+  renderSidebar(); renderDashboard(); renderPagos();
+  if(typeof renderProyectos==='function') renderProyectos();
+  alert('✓ Importados: pagos históricos + clientes inactivos + 38 proyectos históricos.');
+}
+
+function seedProjects() {
+  if(projects.length) return;
+  projects.push({id:'pj_hist_20251013_0',nombre:'Multicuenta (Vicky Becci)',fecha:'2025-10-13',clientId:null,ingreso:1500,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251025_1',nombre:'Video AMC UGC',fecha:'2025-10-25',clientId:null,ingreso:175,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251008_2',nombre:'Mentoriship Ads - Language (Oct)',fecha:'2025-10-08',clientId:null,ingreso:350,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251020_3',nombre:'Lanzamiento Vicky',fecha:'2025-10-20',clientId:null,ingreso:1000,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251108_4',nombre:'Mentoriship Ads - Language (Nov)',fecha:'2025-11-08',clientId:null,ingreso:410,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251110_5',nombre:'Call 1a1 - Fran y Sebas',fecha:'2025-11-10',clientId:null,ingreso:150,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251112_6',nombre:'7 hooks con IA - Vicky',fecha:'2025-11-12',clientId:null,ingreso:70,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251116_7',nombre:'Sketchup Reel + historia',fecha:'2025-11-16',clientId:null,ingreso:300,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251118_8',nombre:'Modificacion 4 ads - Vicky',fecha:'2025-11-18',clientId:null,ingreso:40,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251123_9',nombre:'Publicidad Grid Studio',fecha:'2025-11-23',clientId:null,ingreso:554,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251124_10',nombre:'AMC Cortinas',fecha:'2025-11-24',clientId:null,ingreso:100,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251125_11',nombre:'Ads Vicky',fecha:'2025-11-25',clientId:null,ingreso:240,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251126_12',nombre:'Testimoniales Paula + Lucia',fecha:'2025-11-26',clientId:null,ingreso:100,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251127_13',nombre:'Long Form 2 Vicky',fecha:'2025-11-27',clientId:null,ingreso:300,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251128_14',nombre:'Lanzamiento Mateo Quanteianne',fecha:'2025-11-28',clientId:null,ingreso:1800,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251201_15',nombre:'Sales Partner',fecha:'2025-12-01',clientId:null,ingreso:4000,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251217_16',nombre:'10 ads sin IA - Vicky',fecha:'2025-12-17',clientId:null,ingreso:250,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251218_17',nombre:'Edicion Thank You Page - Mateo',fecha:'2025-12-18',clientId:null,ingreso:25,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251219_18',nombre:'27 clases Mateo Edicion',fecha:'2025-12-19',clientId:null,ingreso:270,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251221_19',nombre:'Facebook - AGOS',fecha:'2025-12-21',clientId:null,ingreso:160,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251222_20',nombre:'6 clases programa Vicky',fecha:'2025-12-22',clientId:null,ingreso:600,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251224_21',nombre:'Contenido diciembre - Vicky',fecha:'2025-12-24',clientId:null,ingreso:360,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251230_22',nombre:'Lanzamiento Mateo (Dic)',fecha:'2025-12-30',clientId:null,ingreso:1800,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20251231_23',nombre:'Mentoria Vicky (Dic)',fecha:'2025-12-31',clientId:null,ingreso:400,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260111_24',nombre:'Edicion VSL - Mateo',fecha:'2026-01-11',clientId:null,ingreso:75,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260116_25',nombre:'Landing Page - Basaarq',fecha:'2026-01-16',clientId:null,ingreso:550,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260117_26',nombre:'Mentoria Vicky (Ene)',fecha:'2026-01-17',clientId:null,ingreso:400,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260118_27',nombre:'Branding - Virginia Cismondi',fecha:'2026-01-18',clientId:null,ingreso:325,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260119_28',nombre:'4 Long Form - Mateo',fecha:'2026-01-19',clientId:null,ingreso:250,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260121_29',nombre:'Produccion 1 dia - Eugenia Cats',fecha:'2026-01-21',clientId:null,ingreso:1000,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260131_30',nombre:'Ads - Basaarq (Ene)',fecha:'2026-01-31',clientId:null,ingreso:400,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260213_31',nombre:'6 Ads Mateo Masterclass',fecha:'2026-02-13',clientId:null,ingreso:210,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260214_32',nombre:'3 Ads Mateo Masterclass',fecha:'2026-02-14',clientId:null,ingreso:105,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260216_33',nombre:'Charla SAGOSA',fecha:'2026-02-16',clientId:null,ingreso:400,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260217_34',nombre:'Grid Studio - reel + historias',fecha:'2026-02-17',clientId:null,ingreso:450,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260219_35',nombre:'Mica Asesora de Imagen',fecha:'2026-02-19',clientId:null,ingreso:250,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260305_36',nombre:'Charla Interior Design España',fecha:'2026-03-05',clientId:null,ingreso:273,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260306_37',nombre:'Benja Luquez - Asesoria',fecha:'2026-03-06',clientId:null,ingreso:1200,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260309_38',nombre:'Clase Colegio Arquitectos SL',fecha:'2026-03-09',clientId:null,ingreso:175,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push({id:'pj_hist_20260331_39',nombre:'Vainilla Digital',fecha:'2026-03-31',clientId:null,ingreso:323,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+}
+
+function seedFixedIncomes() {
+  if(fixedIncomes.length) return;
+  fixedIncomes = [
+    {id:'fi_gc_csm', name:'Growing Content — CSM', amount:1100, method:'Transferencia USD', active:true},
+    {id:'fi_gc_ads', name:'Growing Content — ADS',  amount:700,  method:'Transferencia USD', active:true},
+  ];
 }
 
 function seedClients() {
@@ -794,6 +1085,27 @@ function seedClients() {
     const c = clients.find(x=>x.name===name);
     if(c) c.prepay3 = true;
   });
+
+  // ── NEW CLIENTS ──
+  // Basaarq — ADS, started Feb 21
+  const basaarq = makeClient('Basaarq', 21, 0, {ads:400}, {ads:true}, 'ADS recurrente · $400/mes + 5% comisión ventas');
+  basaarq.startDate = '2026-02';
+  clients.push(basaarq);
+
+  // Angie Ojeda — contenido, not started yet
+  const angieO = makeClient('Angie Ojeda', 1, 15, {contenido:50}, {contenido:true}, '15 piezas · $750/mes — pendiente inicio');
+  angieO.startDate = null;
+  clients.push(angieO);
+
+  // Placarq — contenido, not started yet
+  const placarq = makeClient('Placarq', 1, 15, {contenido:50}, {contenido:true}, '15 piezas · $750/mes — pendiente inicio');
+  placarq.startDate = null;
+  clients.push(placarq);
+
+  // Odental Agency — contenido, not started yet
+  const odental = makeClient('Odental Agency', 1, 15, {contenido:60}, {contenido:true}, '15 piezas · $900/mes — pendiente inicio');
+  odental.startDate = null;
+  clients.push(odental);
 }
 seedClients();
 
@@ -924,10 +1236,34 @@ function calcClient(client,month,year){
 
 // LTV: sum of all payments for a client
 function clientLTV(client){
-  const pays=payments.filter(p=>p.clientId===client.id);
-  const total=pays.reduce((a,p)=>a+(p.amount-(p.fees||0)),0);
-  const months=new Set(pays.map(p=>p.period)).size;
-  return{total,months};
+  // Sum from registered payments
+  const pays = payments.filter(p=>p.clientId===client.id);
+  const paysTotal = pays.reduce((a,p)=>a+(p.amount-(p.fees||0)),0);
+  const paysPeriods = new Set(pays.map(p=>p.period));
+
+  // Also sum from months marked as 'paid' or 'partial' that have MRR > 0
+  // but are NOT already covered by a registered payment
+  let cobradoTotal = 0;
+  let cobradoMonths = 0;
+  YEARS.forEach(y => {
+    MONTHS.forEach(m => {
+      if(!clientActiveInMonth(client, m, y)) return;
+      const d = getMonthData(client, m, y);
+      const period = `${m}_${y}`;
+      if(paysPeriods.has(period)) return; // already counted in payments
+      if(d.cobro === 'paid' || d.cobro === 'partial') {
+        const r = calcClient(client, m, y);
+        if(r.netCC > 0){
+          cobradoTotal += r.netCC;
+          cobradoMonths++;
+        }
+      }
+    });
+  });
+
+  const total = paysTotal + cobradoTotal;
+  const months = paysPeriods.size + cobradoMonths;
+  return { total, months };
 }
 
 // ══════════════════════════════════════════════════════
@@ -949,8 +1285,8 @@ function goPage(p){
   curPage=p; closeSidebar();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
   document.getElementById('page-'+p).classList.add('on');
-  document.querySelectorAll('.sb-btn').forEach((x,i)=>x.classList.toggle('on',['dashboard','pagos','equipo','comparativa','proyectos'][i]===p));
-  const titles={dashboard:'Dashboard',pagos:'Pagos',equipo:'Equipo',comparativa:'Comparativa',proyectos:'Proyectos'};
+  document.querySelectorAll('.sb-btn').forEach((x,i)=>x.classList.toggle('on',['dashboard','pagos','equipo','comparativa','proyectos','metricas'][i]===p));
+  const titles={dashboard:'Dashboard',pagos:'Pagos',equipo:'Equipo',comparativa:'Comparativa',proyectos:'Proyectos',metricas:'Métricas'};
   document.getElementById('topbar-title').textContent=titles[p]||'';
   renderSidebar();
   if(p==='dashboard')renderDashboard();
@@ -958,6 +1294,7 @@ function goPage(p){
   if(p==='equipo')renderTeam();
   if(p==='comparativa')renderComparativa();
   if(p==='proyectos')renderProyectos();
+  if(p==='metricas')renderMetricas();
 }
 function openClient(id){
   curClientId=id; curPage='client'; closeSidebar();
@@ -994,12 +1331,14 @@ function renderSidebar(){
   document.getElementById('sb-clients').innerHTML=clients.filter(c=>c.active).map(c=>{
     const r=calcClient(c,curMonth,curYear);
     const d=getMonthData(c,curMonth,curYear);
-    const dot=d.cobro==='paid'?'var(--grn)':d.cobro==='partial'?'var(--org)':'var(--red2)';
+    const isActive=clientActiveInMonth(c,curMonth,curYear);
+    const dot=!isActive?'var(--t4)':d.cobro==='paid'?'var(--grn)':d.cobro==='partial'?'var(--org)':'var(--red2)';
+    const margTxt=isActive?`<span style="font-size:10px;font-family:var(--mono);color:${margColor(r.margenPct)}">${pct(r.margenPct)}</span>`:'<span style="font-size:10px;font-family:var(--mono);color:var(--t4)">—</span>';
     const on=curPage==='client'&&curClientId===c.id?' on':'';
     return`<div class="sb-client${on}" onclick="openClient('${c.id}')">
       <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:128px">${c.name}</span>
       <div class="sb-cr">
-        <span style="font-size:10px;font-family:var(--mono);color:${margColor(r.margenPct)}">${pct(r.margenPct)}</span>
+        ${margTxt}
         <div class="pdot" style="background:${dot}"></div>
       </div>
     </div>`;
@@ -1038,6 +1377,7 @@ function nextCierreDate(client) {
 function renderDashboard(){
   const label=`${curMonth} ${curYear}`;
   document.getElementById('dash-mlabel').textContent=label;
+  renderFixedIncomes();
   const active=clients.filter(c=>c.active);
   let totCC=0,totNet=0,totCost=0,totMarg=0,cobrados=0,pendientes=0;
   active.forEach(c=>{
@@ -1046,6 +1386,13 @@ function renderDashboard(){
     totCC+=r.cc; totNet+=r.netCC;totCost+=r.costoTotal;totMarg+=r.margenAmt;
     if(getMonthData(c,curMonth,curYear).cobro==='paid')cobrados++;else pendientes++;
   });
+  // Add fixed incomes (recurrent, not clients)
+  const activeFixedIncomes = fixedIncomes.filter(fi=>fi.active!==false);
+  const fiTotal = activeFixedIncomes.reduce((a,fi)=>a+(fi.amount||0),0);
+  totCC  += fiTotal;
+  totNet += fiTotal;
+  totMarg+= fiTotal; // no costs
+
   // Add projects for current month
   const monthProjects = projects.filter(p=>{
     if(!p.date) return false;
@@ -1355,7 +1702,10 @@ function renderClient(id){
   const prepayBadge = c.prepay3 ? `<span class="tag tag-wht">3 meses adelantados</span>` : '';
   const notesBadge  = c.notes   ? `<span style="font-size:10px;color:var(--t3);font-family:var(--mono)">${c.notes}</span>` : '';
   const inactiveBadge=!c.active?`<span class="inactive-badge">Inactivo desde ${c.inactiveSince}</span>`:'';
-  const cobroBadge=`<button class="pbadge ${d.cobro}" onclick="cycleCobro('${id}',event)">${cobroLbl(d.cobro)}</button>`;
+  const isActiveMonth = clientActiveInMonth(c, curMonth, curYear);
+  const cobroBadge = !isActiveMonth
+    ? `<span style="padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;font-family:var(--mono);background:var(--s2);border:1px solid var(--b1);color:var(--t3)">No iniciado</span>`
+    : `<button class="pbadge ${d.cobro}" onclick="cycleCobro('${id}',event)">${cobroLbl(d.cobro)}</button>`;
 
   const ingRows=SERVICES.map(s=>{
     const {qty,price}=d.ingresos[s.k];
@@ -1407,7 +1757,14 @@ function renderClient(id){
     <td style="font-size:10px;color:var(--t3)">${p.method}</td>
   </tr>`).join(''):`<tr><td colspan="5" style="color:var(--t3);font-size:11px;text-align:center;padding:16px">Sin pagos registrados</td></tr>`;
 
+  const notStartedBanner = !isActiveMonth
+    ? `<div style="background:rgba(255,255,255,.03);border:1px solid var(--b1);border-radius:7px;padding:16px;text-align:center;margin-bottom:14px;color:var(--t3);font-size:13px;font-family:var(--mono)">
+        Este cliente inició en <strong style="color:var(--t2)">${c.startDate}</strong> — este período no corresponde a su ciclo activo.
+       </div>`
+    : '';
+
   document.getElementById('client-content').innerHTML=`
+    ${notStartedBanner}
     <div class="cl-header">
       <div class="cl-name-wrap">
         <div class="cl-avatar">${initials(c.name)}</div>
@@ -1793,6 +2150,176 @@ function deleteProyecto(id) {
 });
 
 
+
+
+// ══════════════════════════════════════════════════════
+// INGRESOS FIJOS (ej: Growing Content)
+// ══════════════════════════════════════════════════════
+function renderFixedIncomes() {
+  const el = document.getElementById('fixed-income-list');
+  if(!el) return;
+  if(!fixedIncomes.length) {
+    el.innerHTML='<div style="padding:12px 0;font-size:11px;color:var(--t3);font-family:var(--mono)">Sin ingresos recurrentes cargados</div>';
+    return;
+  }
+  el.innerHTML = fixedIncomes.map(fi=>`
+    <div class="if-row">
+      <div>
+        <span class="bold" style="font-size:13px">${fi.name}</span>
+        <span class="if-badge" style="margin-left:8px">Recurrente</span>
+        ${fi.active===false?'<span class="inactive-badge" style="margin-left:4px">Pausado</span>':''}
+      </div>
+      <div style="font-size:11px;color:var(--t2);font-family:var(--mono)">${fi.method||'—'}</div>
+      <div class="mono bold">${$f(fi.amount||0)}/mes</div>
+      <button class="btn btn-g" style="font-size:10px;padding:3px 8px" onclick="toggleFixedIncome('${fi.id}')">
+        ${fi.active===false?'Activar':'Pausar'}
+      </button>
+      <div class="btn-rm" onclick="deleteFixedIncome('${fi.id}')">✕</div>
+    </div>`).join('');
+}
+
+function openNewFixedIncome() {
+  const name = prompt('Nombre del ingreso (ej: Growing Content):');
+  if(!name || !name.trim()) return;
+  const amtStr = prompt('Monto mensual ($):');
+  const amount = parseFloat(amtStr)||0;
+  if(!amount) return;
+  const method = prompt('Método de pago (ej: Transferencia USD):', 'Transferencia USD') || 'Transferencia USD';
+  fixedIncomes.push({
+    id: 'fi'+Date.now(),
+    name: name.trim(),
+    amount,
+    method,
+    active: true
+  });
+  saveData(); renderFixedIncomes(); renderDashboard();
+}
+
+function toggleFixedIncome(id) {
+  const fi = fixedIncomes.find(x=>x.id===id);
+  if(fi) { fi.active = fi.active===false ? true : false; }
+  saveData(); renderFixedIncomes(); renderDashboard();
+}
+
+function deleteFixedIncome(id) {
+  if(!confirm('¿Eliminar este ingreso recurrente?')) return;
+  fixedIncomes = fixedIncomes.filter(x=>x.id!==id);
+  saveData(); renderFixedIncomes(); renderDashboard();
+}
+
+// ══════════════════════════════════════════════════════
+// MÉTRICAS
+// ══════════════════════════════════════════════════════
+let chartMRR=null, chartMargin=null, chartCost=null, chartClients=null;
+
+function getMonthMetrics(month, year) {
+  const activeClients = clients.filter(c=>c.active && clientActiveInMonth(c,month,year));
+  let mrr=0, cost=0, marg=0;
+  activeClients.forEach(c=>{
+    const r=calcClient(c,month,year);
+    mrr+=r.netCC; cost+=r.costoTotal; marg+=r.margenAmt;
+  });
+  // Add projects
+  const projs=projects.filter(p=>{
+    if(!p.date)return false;
+    const d=new Date(p.date+'T12:00:00');
+    return d.getFullYear()===year && MONTHS[d.getMonth()]===month;
+  });
+  const projIn=projs.reduce((a,p)=>a+(p.ingreso||0),0);
+  const projCost=projs.reduce((a,p)=>a+(p.cEditores||0)+(p.cDiseno||0)+(p.cCopy||0)+(p.cOtros||0),0);
+  mrr+=projIn; cost+=projCost; marg+=projIn-projCost;
+  const margPct=mrr>0?(marg/mrr*100):0;
+  const ticket=activeClients.length>0?mrr/activeClients.length:0;
+  const ltvAvg=activeClients.length>0?activeClients.reduce((a,c)=>a+clientLTV(c).total,0)/activeClients.length:0;
+  return{mrr,cost,marg,margPct,clients:activeClients.length,ticket,ltvAvg};
+}
+
+function renderMetricas(){
+  document.getElementById('met-year-label').textContent=curYear;
+  const data=MONTHS.map(m=>({month:m,...getMonthMetrics(m,curYear)}));
+
+  // Annual KPIs
+  const totalMRR=data.reduce((a,d)=>a+d.mrr,0);
+  const totalCost=data.reduce((a,d)=>a+d.cost,0);
+  const totalMarg=data.reduce((a,d)=>a+d.marg,0);
+  const avgMargPct=totalMRR>0?(totalMarg/totalMRR*100):0;
+  const avgClients=data.reduce((a,d)=>a+d.clients,0)/12;
+  const avgTicket=data.filter(d=>d.clients>0).reduce((a,d)=>a+d.ticket,0)/(data.filter(d=>d.clients>0).length||1);
+  const maxMRR=Math.max(...data.map(d=>d.mrr));
+  const curMonthIdx=MONTHS.indexOf(curMonth);
+  const prevMRR=curMonthIdx>0?data[curMonthIdx-1].mrr:0;
+  const curMRR=data[curMonthIdx].mrr;
+  const mrrTrend=prevMRR>0?((curMRR-prevMRR)/prevMRR*100):0;
+  const trendHtml=v=>{
+    if(Math.abs(v)<1) return `<span class="trend-flat">→ sin cambio</span>`;
+    return v>0?`<span class="trend-up">↑ ${Math.abs(v).toFixed(1)}% vs mes ant.</span>`
+              :`<span class="trend-down">↓ ${Math.abs(v).toFixed(1)}% vs mes ant.</span>`;
+  };
+
+  document.getElementById('met-kpis').innerHTML=`
+    <div class="kpi hi"><div class="kpi-l">MRR Anual Total</div><div class="kpi-v">${$f(totalMRR)}</div><div class="kpi-s">${trendHtml(mrrTrend).replace(/class="[^"]*"/,'')}</div></div>
+    <div class="kpi grn"><div class="kpi-l">Margen Anual</div><div class="kpi-v">${$f(totalMarg)}</div><div class="kpi-s">${pct(avgMargPct)} promedio</div></div>
+    <div class="kpi"><div class="kpi-l">Ticket Promedio</div><div class="kpi-v">${$f(avgTicket)}</div><div class="kpi-s">por cliente/mes</div></div>
+    <div class="kpi"><div class="kpi-l">Clientes Prom.</div><div class="kpi-v">${Math.round(avgClients)}</div><div class="kpi-s">activos por mes</div></div>`;
+
+  // Table
+  document.getElementById('met-tbody').innerHTML=data.map((d,i)=>{
+    const prev=i>0?data[i-1]:null;
+    const mrrDiff=prev&&prev.mrr>0?((d.mrr-prev.mrr)/prev.mrr*100):null;
+    const trendCell=mrrDiff===null?''
+      :mrrDiff>1?`<span class="trend-up">↑${Math.abs(mrrDiff).toFixed(0)}%</span>`
+      :mrrDiff<-1?`<span class="trend-down">↓${Math.abs(mrrDiff).toFixed(0)}%</span>`
+      :`<span class="trend-flat">→</span>`;
+    const isCurrentMonth = d.month===curMonth;
+    const rowStyle = isCurrentMonth ? 'background:rgba(191,22,34,.05);font-weight:700;' : '';
+    return`<tr style="${rowStyle}">
+      <td class="bold">${d.month} ${isCurrentMonth?'<span style="font-size:9px;color:var(--red2);font-family:var(--mono)">← actual</span>':''}</td>
+      <td class="r mono">${d.mrr>0?$f(d.mrr):'<span style="color:var(--t4)">—</span>'} ${trendCell}</td>
+      <td class="r mono">${d.cost>0?$f(d.cost):'<span style="color:var(--t4)">—</span>'}</td>
+      <td class="r mono" style="color:${d.marg>0?margColor(d.margPct):'var(--t4)'}">${d.marg>0?$f(d.marg):'—'}</td>
+      <td class="r"><span class="${d.margPct>0?'mpill '+margClass(d.margPct):'dim'}">${d.margPct>0?pct(d.margPct):'—'}</span></td>
+      <td class="r mono">${d.clients>0?d.clients:'<span style="color:var(--t4)">—</span>'}</td>
+      <td class="r mono">${d.ticket>0?$f(d.ticket):'<span style="color:var(--t4)">—</span>'}</td>
+      <td class="r mono">${d.ltvAvg>0?$f(d.ltvAvg):'<span style="color:var(--t4)">—</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  // Charts
+  const labels=SHORT_M;
+  const isDark=!document.body.classList.contains('light');
+  const gridColor=isDark?'rgba(255,255,255,.06)':'rgba(0,0,0,.07)';
+  const textColor=isDark?'#555':'#aaa';
+  const chartDefaults={
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:isDark?'#999':'#666',font:{size:11,family:'JetBrains Mono'}}},tooltip:{backgroundColor:isDark?'#1a1a1a':'#fff',titleColor:isDark?'#fff':'#000',bodyColor:isDark?'#999':'#555',borderColor:isDark?'#333':'#ddd',borderWidth:1}},
+    scales:{x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10,family:'JetBrains Mono'}}},y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:10,family:'JetBrains Mono'},callback:v=>'$'+Math.round(v).toLocaleString('es-AR')}}}
+  };
+
+  const mkChart=(id,ref,cfg)=>{
+    if(ref) ref.destroy();
+    const ctx=document.getElementById(id)?.getContext('2d');
+    if(!ctx) return null;
+    return new Chart(ctx,cfg);
+  };
+
+  chartMRR=mkChart('chart-mrr',chartMRR,{type:'bar',data:{labels,datasets:[
+    {label:'MRR',data:data.map(d=>d.mrr),backgroundColor:'rgba(191,22,34,.5)',borderColor:'#bf1622',borderWidth:1,borderRadius:3},
+    {label:'Margen $',data:data.map(d=>d.marg),backgroundColor:'rgba(74,222,128,.3)',borderColor:'#4ade80',borderWidth:1,borderRadius:3,type:'bar'}
+  ]},options:{...chartDefaults}});
+
+  chartMargin=mkChart('chart-margin',chartMargin,{type:'line',data:{labels,datasets:[
+    {label:'Margen %',data:data.map(d=>Math.round(d.margPct)),borderColor:'#bf1622',backgroundColor:'rgba(191,22,34,.1)',tension:.3,fill:true,pointBackgroundColor:'#bf1622',pointRadius:3}
+  ]},options:{...chartDefaults,scales:{...chartDefaults.scales,y:{...chartDefaults.scales.y,ticks:{...chartDefaults.scales.y.ticks,callback:v=>v+'%'}}}}});
+
+  chartCost=mkChart('chart-cost',chartCost,{type:'line',data:{labels,datasets:[
+    {label:'Costo Op.',data:data.map(d=>d.cost),borderColor:'#fb923c',backgroundColor:'rgba(251,146,60,.1)',tension:.3,fill:true,pointBackgroundColor:'#fb923c',pointRadius:3}
+  ]},options:{...chartDefaults}});
+
+  chartClients=mkChart('chart-clients',chartClients,{type:'bar',data:{labels,datasets:[
+    {label:'Clientes activos',data:data.map(d=>d.clients),backgroundColor:'rgba(191,22,34,.4)',borderColor:'#bf1622',borderWidth:1,borderRadius:3}
+  ]},options:{...chartDefaults,scales:{...chartDefaults.scales,y:{...chartDefaults.scales.y,ticks:{...chartDefaults.scales.y.ticks,callback:v=>v}}}}});
+}
+
 // ══════════════════════════════════════════════════════
 // THEME TOGGLE
 // ══════════════════════════════════════════════════════
@@ -1889,6 +2416,7 @@ async function loadData() {
     if(d.editors)       editors       = d.editors;
     if(d.fixedSalaries) fixedSalaries = d.fixedSalaries;
     if(d.projects)      projects      = d.projects;
+    if(d.fixedIncomes)  fixedIncomes  = d.fixedIncomes;
     console.log('✓ Datos cargados desde localStorage');
     return true;
   } catch(e) { return false; }
@@ -1939,7 +2467,7 @@ async function init() {
   checkAuth();
   loadTheme();
   const hadSavedData = await loadData();
-  if (!hadSavedData) seedClients();
+  if (!hadSavedData) { seedClients(); seedFixedIncomes(); seedProjects(); }
   renderMonthStrip();
   renderSidebar();
   renderDashboard();
