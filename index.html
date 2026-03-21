@@ -948,9 +948,9 @@ function renderDashboard(){
     const cardCls=diff===0?'cierre-card hoy':diff===1?'cierre-card manana':'cierre-card';
 
     // Fecha de cierre y fecha estimada de cobro (= día inicio ciclo del siguiente mes)
-    const cierreStr=fecha.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
+    const cierreStr=fecha.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'});
     const cobroDate=new Date(fecha); cobroDate.setDate(cobroDate.getDate()+1);
-    const cobroStr=cobroDate.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
+    const cobroStr=cobroDate.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'});
 
     // Servicios contratados
     const svcLabels=Object.entries(c.services)
@@ -995,7 +995,11 @@ function renderDashboard(){
     const r=calcClient(c,curMonth,curYear);
     const d=getMonthData(c,curMonth,curYear);
     const ltv=clientLTV(c);
-    const cycle=c.cycleDay===1?'1/31':`${c.cycleDay}→${c.cycleDay-1}`;
+    const mIdx = MONTHS.indexOf(curMonth);
+    const csDate = new Date(curYear, mIdx, c.cycleDay);
+    const ceDate = new Date(csDate); ceDate.setDate(ceDate.getDate()+29);
+    const fs = d => d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});
+    const cycle = c.cycleDay===1 ? `1→31/${SHORT_M[mIdx]}` : `${fs(csDate)}→${fs(ceDate)}`;
     const piezas=c.contenidoQty||(c.services.ads&&!c.services.contenido?'—':0);
     const prepayBadge=c.prepay3?`<span class="tag tag-wht" style="margin-left:4px">3m</span>`:'';
     return`<tr ondblclick="openClient('${c.id}')" style="cursor:pointer">
@@ -1205,7 +1209,14 @@ function renderClient(id){
   const fixed=r.fixed;
   const edDetail=clientEditorCosts(c,curMonth,curYear);
   const ltv=clientLTV(c);
-  const cycle=c.cycleDay===1?'del 1 al 31':`del ${c.cycleDay} al ${c.cycleDay-1}`;
+  // Cycle with exact month/year dates
+  const monthIdx = MONTHS.indexOf(curMonth);
+  const cycleStartDate = new Date(curYear, monthIdx, c.cycleDay);
+  const cycleEndDate = new Date(cycleStartDate); cycleEndDate.setDate(cycleEndDate.getDate() + 29);
+  const fmtShort = d => d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'});
+  const cycle = c.cycleDay===1
+    ? `1/03/${String(curYear).slice(2)} → 31/03/${String(curYear).slice(2)}`
+    : `${fmtShort(cycleStartDate)} → ${fmtShort(cycleEndDate)}`;
   const svcTags=Object.entries(c.services).filter(([,v])=>v)
     .map(([k])=>({contenido:'Contenido',ads:'ADS',longform:'Long Form',email:'Email',servicio5:'Historias'}[k]||k))
     .map(l=>`<span class="tag tag-wht">${l}</span>`).join('');
