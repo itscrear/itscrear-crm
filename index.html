@@ -885,6 +885,10 @@ function addInactiveClient(name, cycleDay, mrr, qty, svcs) {
 
 function importHistorial() {
   if(!confirm('Importar historial completo 2024-2026? Agrega pagos, proyectos y clientes inactivos sin borrar datos actuales.')) return;
+
+  // Make sure active clients are seeded first
+  if(clients.length === 0) { seedClients(); seedFixedIncomes(); }
+
   const findId = name => clients.find(cl=>cl.name===name)?.id || null;
 
   // Add inactive clients (6 original)
@@ -2884,7 +2888,12 @@ async function init() {
   checkAuth();
   loadTheme();
   const hadSavedData = await loadData();
-  if (!hadSavedData) { seedClients(); seedFixedIncomes(); seedProjects(); }
+  // Seed if no data OR if clients were wiped (empty after reset)
+  if (!hadSavedData || clients.length === 0) {
+    seedClients();
+    seedFixedIncomes();
+    seedProjects();
+  }
   renderMonthStrip();
   renderSidebar();
   renderDashboard();
