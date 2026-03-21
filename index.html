@@ -265,6 +265,12 @@ select.sel option{background:var(--s2);}
 .login-btn{width:100%;padding:12px;border-radius:6px;background:var(--red);color:#fff;font-family:var(--font);font-weight:800;font-size:14px;border:none;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
 .login-btn:hover{background:var(--red2);transform:translateY(-1px);}
 .login-error{font-size:11px;font-family:var(--mono);color:var(--red2);display:none;}
+
+/* ── PROYECTOS ── */
+.proj-form{background:var(--s1);border:1px solid var(--b1);border-radius:7px;padding:16px;margin-bottom:12px;}
+.proj-costs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
+@media(max-width:900px){.proj-costs{grid-template-columns:1fr 1fr;}}
+.proj-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;font-family:var(--mono);background:rgba(251,191,36,.1);color:var(--ylw);border:1px solid rgba(251,191,36,.2);}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
@@ -297,6 +303,7 @@ select.sel option{background:var(--s2);}
   <button class="sb-btn" onclick="goPage('pagos')">◎ Pagos</button>
   <button class="sb-btn" onclick="goPage('equipo')">◉ Equipo</button>
   <button class="sb-btn" onclick="goPage('comparativa')">⊞ Comparativa</button>
+  <button class="sb-btn" onclick="goPage('proyectos')">◇ Proyectos</button>
   <div class="sb-sec">Clientes Activos</div>
   <div class="sb-clients" id="sb-clients"></div>
   <div class="sb-footer">
@@ -467,6 +474,55 @@ select.sel option{background:var(--s2);}
       </div>
     </div>
 
+
+    <!-- PROYECTOS -->
+    <div class="page" id="page-proyectos">
+      <div class="proj-form">
+        <div class="sec-label" style="margin-bottom:12px">Nuevo Proyecto</div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;align-items:end">
+          <div class="fg"><label>Nombre del proyecto</label><input class="fi" id="pj-nombre" type="text" placeholder="Ej: Landing page Metier"/></div>
+          <div class="fg"><label>Cliente (opcional)</label>
+            <select class="fi" id="pj-cliente"><option value="">— Suelto —</option></select>
+          </div>
+          <div class="fg"><label>Fecha</label><input class="fi" id="pj-fecha" type="date"/></div>
+          <div class="fg"><label>Ingreso ($)</label><input class="fi" id="pj-ingreso" type="number" placeholder="0" min="0"/></div>
+        </div>
+        <div style="margin-top:10px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--red2);font-family:var(--mono);padding-bottom:6px;border-bottom:1px solid rgba(191,22,34,.15);">Costos (opcionales)</div>
+        <div class="proj-costs">
+          <div class="fg"><label>Editores ($)</label><input class="fi" id="pj-c-editores" type="number" placeholder="0" min="0"/></div>
+          <div class="fg"><label>Diseñadora ($)</label><input class="fi" id="pj-c-diseno" type="number" placeholder="0" min="0"/></div>
+          <div class="fg"><label>Copywriter ($)</label><input class="fi" id="pj-c-copy" type="number" placeholder="0" min="0"/></div>
+          <div class="fg"><label>Otros costos ($)</label><input class="fi" id="pj-c-otros" type="number" placeholder="0" min="0"/></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px;gap:8px;align-items:center">
+          <div id="pj-preview" style="font-size:11px;font-family:var(--mono);color:var(--t3)"></div>
+          <button class="btn btn-p" onclick="guardarProyecto()">Guardar Proyecto</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Proyectos</span>
+          <div style="display:flex;gap:6px">
+            <select class="sel" id="pj-filter-client" onchange="renderProyectos()"><option value="">Todos</option></select>
+            <select class="sel" id="pj-filter-year" onchange="renderProyectos()">
+              <option value="">Todos los años</option>
+              <option>2024</option><option>2025</option><option selected>2026</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>Proyecto</th><th>Cliente</th><th>Fecha</th><th>Período</th>
+            <th class="r">Ingreso</th><th class="r">Costos</th>
+            <th class="r">Margen $</th><th class="r">Margen %</th><th></th>
+          </tr></thead>
+          <tbody id="pj-tbody"></tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
     <!-- CLIENT DETAIL -->
     <div class="page" id="page-client">
       <div id="client-content"></div>
@@ -485,6 +541,13 @@ select.sel option{background:var(--s2);}
         <label>Nombre</label>
         <input class="fi" id="mc-name" type="text" placeholder="Ej: Anabella Rabinovich" />
       </div>
+    </div>
+    <div class="frow">
+      <div class="fg">
+        <label>Fecha inicio cliente</label>
+        <input class="fi" id="mc-startdate" type="month" />
+      </div>
+      <div class="fg" style="grid-column:span 1">&nbsp;</div>
     </div>
     <div class="frow">
       <div class="fg">
@@ -600,7 +663,7 @@ function blankClient(name,day,metodo) {
     id:'c'+Date.now()+Math.floor(Math.random()*9999),
     name,cycleDay:day||1,defaultMethod:metodo||'Transferencia pesos',
     services:{contenido:false,ads:false,longform:false,email:false},
-    contenidoQty:15,active:true,inactiveSince:null,
+    contenidoQty:15,active:true,inactiveSince:null,startDate:null,
     months
   };
 }
@@ -642,9 +705,11 @@ function inferPeriod(dateStr, cycleDay) {
 // ══════════════════════════════════════════════════════
 let clients = [];
 let payments = [];
+let projects = [];
 
-function makeClient(name, cycleDay, qty, mrr, svcs, notes) {
+function makeClient(name, cycleDay, qty, mrr, svcs, notes, startDate) {
   const c = blankClient(name, cycleDay, 'Transferencia USD');
+  c.startDate = startDate || null;
   c.services = Object.assign({contenido:false,ads:false,longform:false,email:false}, svcs);
   c.contenidoQty = qty;
   c.notes = notes || '';
@@ -698,6 +763,16 @@ let curMonth=MONTHS[new Date().getMonth()], curYear=2026, curPage='dashboard', c
 let editingClientId=null, editingEditorId=null;
 let mcSvcs={contenido:false,ads:false,longform:false,email:false}, mcQty=15;
 
+
+// Returns true if the given month/year is on or after the client's startDate
+function clientActiveInMonth(client, month, year) {
+  if(!client.startDate) return true;
+  const [sy, sm] = client.startDate.split('-').map(Number);
+  const mIdx = MONTHS.indexOf(month);
+  if(year > sy) return true;
+  if(year === sy && mIdx >= sm - 1) return true;
+  return false;
+}
 // ══════════════════════════════════════════════════════
 // CALCULATIONS — ponderación por días
 // ══════════════════════════════════════════════════════
@@ -833,14 +908,15 @@ function goPage(p){
   curPage=p; closeSidebar();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
   document.getElementById('page-'+p).classList.add('on');
-  document.querySelectorAll('.sb-btn').forEach((x,i)=>x.classList.toggle('on',['dashboard','pagos','equipo','comparativa'][i]===p));
-  const titles={dashboard:'Dashboard',pagos:'Pagos',equipo:'Equipo',comparativa:'Comparativa'};
+  document.querySelectorAll('.sb-btn').forEach((x,i)=>x.classList.toggle('on',['dashboard','pagos','equipo','comparativa','proyectos'][i]===p));
+  const titles={dashboard:'Dashboard',pagos:'Pagos',equipo:'Equipo',comparativa:'Comparativa',proyectos:'Proyectos'};
   document.getElementById('topbar-title').textContent=titles[p]||'';
   renderSidebar();
   if(p==='dashboard')renderDashboard();
   if(p==='pagos')renderPagos();
   if(p==='equipo')renderTeam();
   if(p==='comparativa')renderComparativa();
+  if(p==='proyectos')renderProyectos();
 }
 function openClient(id){
   curClientId=id; curPage='client'; closeSidebar();
@@ -924,10 +1000,24 @@ function renderDashboard(){
   const active=clients.filter(c=>c.active);
   let totCC=0,totNet=0,totCost=0,totMarg=0,cobrados=0,pendientes=0;
   active.forEach(c=>{
+    if(!clientActiveInMonth(c,curMonth,curYear)) return;
     const r=calcClient(c,curMonth,curYear);
     totCC+=r.cc; totNet+=r.netCC;totCost+=r.costoTotal;totMarg+=r.margenAmt;
     if(getMonthData(c,curMonth,curYear).cobro==='paid')cobrados++;else pendientes++;
   });
+  // Add projects for current month
+  const monthProjects = projects.filter(p=>{
+    if(!p.date) return false;
+    const d=new Date(p.date+'T12:00:00');
+    return d.getFullYear()===curYear && MONTHS[d.getMonth()]===curMonth;
+  });
+  const projIngreso = monthProjects.reduce((a,p)=>a+(p.ingreso||0),0);
+  const projCosto   = monthProjects.reduce((a,p)=>a+(p.cEditores||0)+(p.cDiseno||0)+(p.cCopy||0)+(p.cOtros||0),0);
+  const projMargen  = projIngreso - projCosto;
+  totCC   += projIngreso;
+  totNet  += projIngreso;
+  totCost += projCosto;
+  totMarg += projMargen;
   const mg=totNet>0?totMarg/totNet*100:0;
   const totalLTV=active.reduce((a,c)=>a+clientLTV(c).total,0);
 
@@ -991,7 +1081,7 @@ function renderDashboard(){
     <div class="kpi"><div class="kpi-l">LTV Total</div><div class="kpi-v" style="color:var(--ylw)">${$f(totalLTV)}</div><div class="kpi-s">${payments.length} pagos registrados</div></div>
     <div class="kpi red"><div class="kpi-l">Pendientes</div><div class="kpi-v">${pendientes}</div><div class="kpi-s">de ${active.length} clientes</div></div>`;
 
-  document.getElementById('dash-tbody').innerHTML=active.map(c=>{
+  document.getElementById('dash-tbody').innerHTML=active.filter(c=>clientActiveInMonth(c,curMonth,curYear)).map(c=>{
     const r=calcClient(c,curMonth,curYear);
     const d=getMonthData(c,curMonth,curYear);
     const ltv=clientLTV(c);
@@ -1215,7 +1305,7 @@ function renderClient(id){
   const cycleEndDate = new Date(cycleStartDate); cycleEndDate.setDate(cycleEndDate.getDate() + 29);
   const fmtShort = d => d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit'});
   const cycle = c.cycleDay===1
-    ? `1/03/${String(curYear).slice(2)} → 31/03/${String(curYear).slice(2)}`
+    ? `01/${String(monthIdx+1).padStart(2,'0')}/${String(curYear).slice(2)} → ${new Date(curYear,monthIdx+1,0).getDate()}/${String(monthIdx+1).padStart(2,'0')}/${String(curYear).slice(2)}`
     : `${fmtShort(cycleStartDate)} → ${fmtShort(cycleEndDate)}`;
   const svcTags=Object.entries(c.services).filter(([,v])=>v)
     .map(([k])=>({contenido:'Contenido',ads:'ADS',longform:'Long Form',email:'Email',servicio5:'Historias'}[k]||k))
@@ -1450,6 +1540,7 @@ function openNewClient(){
   document.getElementById('mc-name').value='';
   document.getElementById('mc-day').value='';
   document.getElementById('mc-method').value='Transferencia pesos';
+  document.getElementById('mc-startdate').value='';
   document.getElementById('mc-del').style.display='none';
   resetMCSvcs({},15);
   document.getElementById('ov-client').classList.add('on');
@@ -1461,6 +1552,7 @@ function openEditClient(id){
   document.getElementById('mc-name').value=c.name;
   document.getElementById('mc-day').value=c.cycleDay;
   document.getElementById('mc-method').value=c.defaultMethod;
+  document.getElementById('mc-startdate').value=c.startDate||'';
   document.getElementById('mc-del').style.display='flex';
   const btn=document.getElementById('mc-toggle-active-btn');
   btn.textContent=c.active?'Dar de Baja':'Reactivar';
@@ -1477,9 +1569,11 @@ function saveClient(){
   if(editingClientId){
     const c=clients.find(x=>x.id===editingClientId);
     c.name=name;c.cycleDay=day;c.defaultMethod=method;
+    c.startDate=document.getElementById('mc-startdate').value||null;
     c.services={...mcSvcs};c.contenidoQty=finalQty;
   } else {
     const c=blankClient(name,day,method);
+    c.startDate=document.getElementById('mc-startdate').value||null;
     c.services={...mcSvcs};c.contenidoQty=finalQty;
     if(finalQty)MONTHS.forEach(m=>YEARS.forEach(y=>getMonthData(c,m,y).ingresos.contenido.qty=finalQty));
     clients.push(c);
@@ -1560,6 +1654,103 @@ document.querySelectorAll('.overlay').forEach(ov=>ov.addEventListener('click',fu
 document.getElementById('pf-fecha').addEventListener('change',updatePagoPreview);
 document.getElementById('pf-cliente').addEventListener('change',updatePagoPreview);
 
+
+// ══════════════════════════════════════════════════════
+// PROYECTOS
+// ══════════════════════════════════════════════════════
+function renderProyectos() {
+  // Populate client dropdowns
+  const allC = clients;
+  ['pj-cliente','pj-filter-client'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML=(id==='pj-cliente'?'<option value="">— Suelto —</option>':'<option value="">Todos</option>')
+      +allC.map(c=>`<option value="${c.id}"${c.id===cur?' selected':''}>${c.name}</option>`).join('');
+  });
+
+  const filterClient=document.getElementById('pj-filter-client')?.value||'';
+  const filterYear=document.getElementById('pj-filter-year')?.value||'';
+
+  let filtered=[...projects].sort((a,b)=>b.date.localeCompare(a.date));
+  if(filterClient) filtered=filtered.filter(p=>p.clientId===filterClient);
+  if(filterYear)   filtered=filtered.filter(p=>p.date&&p.date.startsWith(filterYear));
+
+  document.getElementById('pj-tbody').innerHTML=filtered.map(p=>{
+    const cl=clients.find(x=>x.id===p.clientId);
+    const costoTotal=(p.cEditores||0)+(p.cDiseno||0)+(p.cCopy||0)+(p.cOtros||0);
+    const margenAmt=(p.ingreso||0)-costoTotal;
+    const margenPct=(p.ingreso||0)>0?(margenAmt/(p.ingreso||1)*100):0;
+    const d=new Date(p.date+'T12:00:00');
+    const periodo=`${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    return`<tr>
+      <td class="bold">${p.nombre}</td>
+      <td>${cl?cl.name:'<span style="color:var(--t3)">Suelto</span>'}</td>
+      <td class="mono">${fmtDate(p.date)}</td>
+      <td><span class="proj-badge">${periodo}</span></td>
+      <td class="r mono">${$f(p.ingreso||0)}</td>
+      <td class="r mono" style="color:var(--t2)">${costoTotal>0?$f(costoTotal):'—'}</td>
+      <td class="r mono" style="color:${margColor(margenPct)}">${$f(margenAmt)}</td>
+      <td class="r"><span class="mpill ${margClass(margenPct)}">${pct(margenPct)}</span></td>
+      <td><div class="btn-rm" onclick="deleteProyecto('${p.id}')">✕</div></td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:20px;font-size:12px">Sin proyectos cargados</td></tr>`;
+
+  // Preview margin
+  updatePjPreview();
+}
+
+function updatePjPreview() {
+  const ing=parseFloat(document.getElementById('pj-ingreso')?.value)||0;
+  const costs=['pj-c-editores','pj-c-diseno','pj-c-copy','pj-c-otros'].reduce((a,id)=>a+(parseFloat(document.getElementById(id)?.value)||0),0);
+  const prev=document.getElementById('pj-preview');
+  if(!prev) return;
+  if(ing>0) {
+    const m=ing-costs;
+    const mp=ing>0?(m/ing*100):0;
+    prev.innerHTML=`Margen: <span style="color:${margColor(mp)};font-weight:700">${$f(m)} (${pct(mp)})</span>`;
+  } else prev.textContent='';
+}
+
+function guardarProyecto() {
+  const nombre=document.getElementById('pj-nombre').value.trim();
+  const fecha=document.getElementById('pj-fecha').value;
+  const ingreso=parseFloat(document.getElementById('pj-ingreso').value)||0;
+  if(!nombre||!fecha) {alert('Completá nombre y fecha');return;}
+  const p={
+    id:'pj'+Date.now(),
+    nombre, fecha,
+    clientId:document.getElementById('pj-cliente').value||null,
+    ingreso,
+    cEditores:parseFloat(document.getElementById('pj-c-editores').value)||0,
+    cDiseno:parseFloat(document.getElementById('pj-c-diseno').value)||0,
+    cCopy:parseFloat(document.getElementById('pj-c-copy').value)||0,
+    cOtros:parseFloat(document.getElementById('pj-c-otros').value)||0,
+  };
+  projects.push(p);
+  saveData();
+  // Reset form
+  ['pj-nombre','pj-ingreso','pj-c-editores','pj-c-diseno','pj-c-copy','pj-c-otros'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('pj-cliente').value='';
+  document.getElementById('pj-fecha').value='';
+  renderProyectos();
+  renderDashboard();
+}
+
+function deleteProyecto(id) {
+  if(!confirm('¿Eliminar este proyecto?')) return;
+  projects=projects.filter(p=>p.id!==id);
+  saveData(); renderProyectos(); renderDashboard();
+}
+
+// Wire up preview inputs
+['pj-ingreso','pj-c-editores','pj-c-diseno','pj-c-copy','pj-c-otros'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('input', updatePjPreview);
+});
+
 // ══════════════════════════════════════════════════════
 // MOBILE SIDEBAR
 // ══════════════════════════════════════════════════════
@@ -1638,6 +1829,7 @@ async function loadData() {
     if(d.payments)      payments      = d.payments;
     if(d.editors)       editors       = d.editors;
     if(d.fixedSalaries) fixedSalaries = d.fixedSalaries;
+    if(d.projects)      projects      = d.projects;
     console.log('✓ Datos cargados desde localStorage');
     return true;
   } catch(e) { return false; }
