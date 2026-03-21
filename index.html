@@ -254,12 +254,35 @@ select.sel option{background:var(--s2);}
 .qpill:hover{color:var(--t1);}
 .qpill.on{border-color:rgba(191,22,34,.4);background:rgba(191,22,34,.1);color:var(--red2);}
 
+
+/* ── LOGIN ── */
+.login-screen{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;}
+.login-box{width:320px;padding:40px;display:flex;flex-direction:column;align-items:center;gap:20px;}
+.login-logo{width:120px;margin-bottom:8px;}
+.login-sub{font-size:10px;font-family:var(--mono);color:var(--t3);text-transform:uppercase;letter-spacing:2px;margin-top:-12px;}
+.login-input{width:100%;background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:12px 16px;color:var(--t1);font-family:var(--mono);font-size:16px;letter-spacing:4px;outline:none;text-align:center;transition:border-color .2s;}
+.login-input:focus{border-color:var(--red);}
+.login-btn{width:100%;padding:12px;border-radius:6px;background:var(--red);color:#fff;font-family:var(--font);font-weight:800;font-size:14px;border:none;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
+.login-btn:hover{background:var(--red2);transform:translateY(-1px);}
+.login-error{font-size:11px;font-family:var(--mono);color:var(--red2);display:none;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
 </style>
 </head>
 <body>
+
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <img class="login-logo" src="data:image/png;base64,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" alt="crear." />
+    <div class="login-sub">financial tracker</div>
+    <input class="login-input" id="login-pwd" type="password" placeholder="••••••••" maxlength="20" onkeydown="if(event.key==='Enter')checkLogin()"/>
+    <button class="login-btn" onclick="checkLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Contraseña incorrecta</div>
+  </div>
+</div>
 
 <div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
 
@@ -293,7 +316,7 @@ select.sel option{background:var(--s2);}
       <div id="save-indicator" style="font-size:10px;font-family:var(--mono);color:var(--t3);display:none;">✓ guardado</div>
       <div class="period-strip">
         <select class="year-sel" id="year-sel" onchange="updatePeriod()">
-          <option>2023</option><option>2024</option><option selected>2025</option><option>2026</option>
+          <option>2023</option><option>2024</option><option>2025</option><option selected>2026</option>
         </select>
         <div class="month-strip" id="month-strip"></div>
       </div>
@@ -389,7 +412,7 @@ select.sel option{background:var(--s2);}
             </select>
             <select class="sel" id="pago-filter-year" onchange="renderPagos()">
               <option value="">Todos los años</option>
-              <option>2023</option><option>2024</option><option selected>2025</option><option>2026</option>
+              <option>2023</option><option>2024</option><option>2025</option><option selected>2026</option>
             </select>
           </div>
         </div>
@@ -671,7 +694,7 @@ seedClients();
 // ══════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════
-let curMonth='Enero', curYear=2025, curPage='dashboard', curClientId=null;
+let curMonth=MONTHS[new Date().getMonth()], curYear=2026, curPage='dashboard', curClientId=null;
 let editingClientId=null, editingEditorId=null;
 let mcSvcs={contenido:false,ads:false,longform:false,email:false}, mcQty=15;
 
@@ -1619,10 +1642,39 @@ function resetAllData() {
   location.reload();
 }
 
+
+// ══════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════
+const PWD_HASH = '42831030';
+const SESSION_KEY = 'itscrear_auth';
+
+function checkLogin() {
+  const val = document.getElementById('login-pwd').value;
+  if(val === PWD_HASH) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('login-screen').style.display = 'none';
+  } else {
+    const err = document.getElementById('login-error');
+    err.style.display = 'block';
+    document.getElementById('login-pwd').value = '';
+    document.getElementById('login-pwd').focus();
+    setTimeout(() => err.style.display = 'none', 2000);
+  }
+}
+
+function checkAuth() {
+  if(sessionStorage.getItem(SESSION_KEY) === '1') {
+    document.getElementById('login-screen').style.display = 'none';
+  }
+  // else stays visible
+}
+
 // ══════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════
 async function init() {
+  checkAuth();
   const hadSavedData = await loadData();
   if (!hadSavedData) seedClients();
   renderMonthStrip();
