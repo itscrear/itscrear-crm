@@ -271,6 +271,46 @@ select.sel option{background:var(--s2);}
 .proj-costs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
 @media(max-width:900px){.proj-costs{grid-template-columns:1fr 1fr;}}
 .proj-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;font-family:var(--mono);background:rgba(251,191,36,.1);color:var(--ylw);border:1px solid rgba(251,191,36,.2);}
+
+/* ── LIGHT THEME ── */
+body.light {
+  --bg:#f5f5f0; --s1:#ffffff; --s2:#f0f0eb; --s3:#e8e8e2; --s4:#e0e0d8;
+  --b1:#ddddd5; --b2:#ccccC4; --b3:#bbbbB2;
+  --t1:#0a0a0a; --t2:#555550; --t3:#999990; --t4:#ddddD5;
+  --red:#bf1622; --red2:#e01c2a; --red-dim:rgba(191,22,34,.1);
+  --grn:#16a34a; --ylw:#d97706; --org:#ea580c;
+}
+body.light .topbar { background:rgba(245,245,240,.96); }
+body.light .sb { border-right-color:var(--b1); }
+body.light .sb-btn.on { background:rgba(191,22,34,.07); }
+body.light .sb-client.on { background:rgba(191,22,34,.06); }
+body.light .m-tab.on { background:rgba(191,22,34,.1); }
+body.light .kpi.hi { background:rgba(191,22,34,.04); }
+body.light .resumen { background:var(--s1); }
+body.light input[type=number], body.light input[type=text].eti, body.light select.sel { background:var(--s2); color:var(--t1); }
+body.light .fi { background:var(--s2); color:var(--t1); }
+body.light .modal { background:var(--s1); }
+body.light .login-screen { background:#f5f5f0; }
+body.light .login-box { background:#f5f5f0; }
+body.light .mpill.hi { background:rgba(22,163,74,.12); color:#16a34a; }
+body.light .mpill.md { background:rgba(217,119,6,.12); color:#d97706; }
+body.light .mpill.lo { background:rgba(191,22,34,.1); color:var(--red2); }
+body.light .pbadge.paid { background:rgba(22,163,74,.1); color:#16a34a; border-color:rgba(22,163,74,.2); }
+body.light .tag-wht { background:rgba(0,0,0,.05); border-color:rgba(0,0,0,.12); color:var(--t2); }
+body.light .tag-dim { background:rgba(0,0,0,.04); border-color:var(--b2); color:var(--t3); }
+body.light .cierre-card { background:var(--s1); }
+body.light .editor-assign-row { background:var(--s2); }
+body.light .etable .sub td { background:var(--s2); }
+body.light .inactive-row td { opacity:.5; }
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:5px;
+  background:var(--s2);border:1px solid var(--b1);cursor:pointer;
+  font-size:11px;font-weight:700;font-family:var(--mono);color:var(--t2);
+  transition:all .15s;user-select:none;
+}
+.theme-toggle:hover{color:var(--t1);}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
@@ -320,6 +360,7 @@ select.sel option{background:var(--s2);}
       <div class="topbar-title" id="topbar-title">Dashboard</div>
     </div>
     <div class="topbar-right">
+      <div class="theme-toggle" onclick="toggleTheme()" id="theme-btn">☀ Clara</div>
       <div id="save-indicator" style="font-size:10px;font-family:var(--mono);color:var(--t3);display:none;">✓ guardado</div>
       <div class="period-strip">
         <select class="year-sel" id="year-sel" onchange="updatePeriod()">
@@ -1751,6 +1792,24 @@ function deleteProyecto(id) {
   if(el) el.addEventListener('input', updatePjPreview);
 });
 
+
+// ══════════════════════════════════════════════════════
+// THEME TOGGLE
+// ══════════════════════════════════════════════════════
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  localStorage.setItem('itscrear_theme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isLight ? '🌙 Oscura' : '☀ Clara';
+}
+function loadTheme() {
+  const saved = localStorage.getItem('itscrear_theme');
+  if(saved === 'light') {
+    document.body.classList.add('light');
+    const btn = document.getElementById('theme-btn');
+    if(btn) btn.textContent = '🌙 Oscura';
+  }
+}
+
 // ══════════════════════════════════════════════════════
 // MOBILE SIDEBAR
 // ══════════════════════════════════════════════════════
@@ -1878,6 +1937,7 @@ function checkAuth() {
 // ══════════════════════════════════════════════════════
 async function init() {
   checkAuth();
+  loadTheme();
   const hadSavedData = await loadData();
   if (!hadSavedData) seedClients();
   renderMonthStrip();
