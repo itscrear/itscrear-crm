@@ -894,414 +894,369 @@ function addInactiveClient(name, cycleDay, mrr, qty, svcs) {
 }
 
 function importHistorial() {
-  if(!confirm('Importar historial completo 2024-2026? Agrega pagos, proyectos y clientes inactivos sin borrar datos actuales.')) return;
+  if(!confirm('Importar historial completo 2024-2026? Agrega pagos y clientes inactivos sin borrar datos actuales.')) return;
 
-  // Make sure active clients are seeded first
   if(clients.length === 0) { seedClients(); seedFixedIncomes(); }
 
-  const findId = name => clients.find(cl=>cl.name===name)?.id || null;
-
-  // Add inactive clients (6 original)
+  // Add inactive clients FIRST
   addInactiveClient('Vicky Becci',5,900,20,{"contenido": true});
-  addInactiveClient('Cherry Mediavilla',17,1200,30,{"contenido": true});
   addInactiveClient('Gofurgo',15,1300,30,{"contenido": true});
+  addInactiveClient('Maxi Robles',13,1300,30,{"contenido": true, "ads": true});
+  addInactiveClient('Metier Studio',7,1200,20,{"contenido": true, "ads": true});
+  addInactiveClient('Marketingconmaria',16,1400,30,{"contenido": true});
+  addInactiveClient('Cherry Mediavilla',17,1200,30,{"contenido": true});
+  addInactiveClient('Caro Esteves Siri',14,1000,30,{"contenido": true});
+  addInactiveClient('Gaby Lopez',5,1500,30,{"contenido": true});
+  addInactiveClient('Minntoring',4,1600,0,{});
   addInactiveClient('Belu Bielewicz',24,800,20,{"contenido": true});
-  addInactiveClient('Dakota Estudio',6,750,15,{"contenido": true});
-  addInactiveClient('Taller 215',6,700,15,{"contenido": true});
-
-  // Add additional inactive clients from 2024-2025
-  addInactiveClient('Ahilen Esteve',10,1200,30,{"contenido": true});
+  addInactiveClient('Agus Nievas',1,900,0,{});
   addInactiveClient('Juan Suarez',10,1200,30,{"contenido": true});
   addInactiveClient('Edgar Yo Reparo',20,750,30,{"contenido": true});
-  addInactiveClient('Agus Nievas',1,900,0,{});
-  addInactiveClient('Maxi Robles',13,1300,30,{"contenido": true, "ads": true});
-  addInactiveClient('Marketingconmaria',16,1400,30,{"contenido": true});
-  addInactiveClient('Juli Cotti',1,700,15,{"contenido": true});
-  addInactiveClient('Delfi Menendez',18,1890,15,{"contenido": true});
+  addInactiveClient('Ahilen Esteve',10,1200,30,{"contenido": true});
   addInactiveClient('Jula Arquitectura',6,600,15,{"contenido": true});
+  addInactiveClient('Juli Cotti',1,700,15,{"contenido": true});
+  addInactiveClient('Taller 215',6,700,15,{"contenido": true});
+  addInactiveClient('Dakota Estudio',6,750,15,{"contenido": true});
   addInactiveClient('Araceli Prudente',1,600,0,{"ads": true});
   addInactiveClient('Jose Hernandez',8,600,0,{"ads": true});
-  addInactiveClient('Shark Mindset',17,900,15,{"contenido": true});
+  addInactiveClient('Fede Raspo',18,1200,30,{"contenido": true});
+  addInactiveClient('Seba Bronley',28,1000,30,{"contenido": true});
+  addInactiveClient('Ciudadanias Espanolas',7,400,0,{"contenido": true});
+  addInactiveClient('Wolf Trading',2,300,0,{"ads": true});
+  addInactiveClient('Juli Heredia',19,600,15,{"contenido": true});
+  addInactiveClient('Belen Biele',18,500,0,{"contenido": true});
+  addInactiveClient('Sofi Martinez',30,700,15,{"contenido": true});
+  addInactiveClient('Mateo Duhalde',1,600,0,{"contenido": true});
+  addInactiveClient('Tomi Mazza',1,1200,15,{"contenido": true});
 
-  // Add all client payments (skip duplicates)
-  payments.push({id:'phist_20240422_3600_2024',date:'2024-04-22',clientId:findId('Vicky Becci'),amount:3600.0,fees:0,method:'Transferencia USD',period:'Abril_2024',desc:'Vicky Becci - Pago x3 meses'});
-  payments.push({id:'phist_20240522_1300_2024',date:'2024-05-22',clientId:findId('Gofurgo'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Mayo_2024',desc:'Gofurgo Mallorca - Content - Setter'});
-  payments.push({id:'phist_20240703_350_2024',date:'2024-07-03',clientId:findId('Vicky Becci'),amount:350.0,fees:0,method:'Transferencia USD',period:'Julio_2024',desc:'Vickybecci - Clases + Presentacion VSL'});
-  payments.push({id:'phist_20240715_1300_2024',date:'2024-07-15',clientId:findId('Gofurgo'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Julio_2024',desc:'Gofurgo'});
-  payments.push({id:'phist_20240815_1300_2024',date:'2024-08-15',clientId:findId('Gofurgo'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'Gofurgo'});
-  payments.push({id:'phist_20240903_200_2024',date:'2024-09-03',clientId:findId('Vicky Becci'),amount:200.0,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Clases coach Vicky Becci'});
-  payments.push({id:'phist_20240915_1300_2024',date:'2024-09-15',clientId:findId('Gofurgo'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Gofurgo'});
-  payments.push({id:'phist_20250101_600',date:'2025-01-01',clientId:findId('Araceli Prudente'),amount:600.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Araceli Prudente - ADS'});
-  payments.push({id:'phist_20250102_600',date:'2025-01-02',clientId:findId('Metier Studio'),amount:600.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Metier Studio - 15 Contenido'});
-  payments.push({id:'phist_20250105_180',date:'2025-01-05',clientId:findId('Agus Nievas'),amount:180.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'6 mails - Agus Nievas'});
-  payments.push({id:'phist_20250107_1500',date:'2025-01-07',clientId:findId('Vicky Becci'),amount:1500.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Vicky Becci - 30 videos + mentoria (restan 1500)'});
-  payments.push({id:'phist_20250108_600',date:'2025-01-08',clientId:findId('Jose Hernandez'),amount:600.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Jose Hernandez - ADS'});
-  payments.push({id:'phist_20250110_1200',date:'2025-01-10',clientId:findId('Juan Suarez'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Juan Suarez - 30 contenido'});
-  payments.push({id:'phist_20250113_1150',date:'2025-01-13',clientId:findId('Maxi Robles'),amount:1150.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Maxi 30 contenidos + ADS'});
-  payments.push({id:'phist_20250115_1300',date:'2025-01-15',clientId:findId('Gofurgo'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Gofurgo - 30 Contenido'});
-  payments.push({id:'phist_20250116_1400',date:'2025-01-16',clientId:findId('Marketingconmaria'),amount:1400.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250117_2000',date:'2025-01-17',clientId:findId('Cherry Mediavilla'),amount:2000.0,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Cherry Mediavilla - 30 piezas + historias + emails'});
-  payments.push({id:'phist_20250202_200',date:'2025-02-02',clientId:findId('Vicky Becci'),amount:200.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Mentoria Vicky Becci'});
-  payments.push({id:'phist_20250205_200',date:'2025-02-05',clientId:findId('Vicky Becci'),amount:200.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'4 Clases grabadas Mastery - Vicky Becci'});
-  payments.push({id:'phist_20250206_800',date:'2025-02-06',clientId:findId('Metier Studio'),amount:800.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Metier Studio - 20 Contenido'});
-  payments.push({id:'phist_20250207_2115',date:'2025-02-07',clientId:findId('Agus Nievas'),amount:2115.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Agus Nievas - Copywritter'});
-  payments.push({id:'phist_20250209_45',date:'2025-02-09',clientId:findId('Vicky Becci'),amount:45.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'3 Anuncios editados - Vicky Becci'});
-  payments.push({id:'phist_20250212_1200',date:'2025-02-12',clientId:findId('Ahilen Esteve'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Ahilen Esteve - 30 Contenido'});
-  payments.push({id:'phist_20250213_1510',date:'2025-02-13',clientId:findId('Maxi Robles'),amount:1510.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Maxi 30 contenidos + ADS'});
-  payments.push({id:'phist_20250215_1300',date:'2025-02-15',clientId:findId('Gofurgo'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Gofurgo - 30 Contenido'});
-  payments.push({id:'phist_20250216_1400',date:'2025-02-16',clientId:findId('Marketingconmaria'),amount:1400.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250217_100',date:'2025-02-17',clientId:findId('Vicky Becci'),amount:100.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Template Testimonio - Vicky Becci'});
-  payments.push({id:'phist_20250218_100',date:'2025-02-18',clientId:findId('Vicky Becci'),amount:100.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Videos 10 videos Sonia - Vicky Becci'});
-  payments.push({id:'phist_20250219_300',date:'2025-02-19',clientId:findId('Vicky Becci'),amount:300.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'2 Long Form - Vicky Becci'});
-  payments.push({id:'phist_20250220_1000',date:'2025-02-20',clientId:findId('Edgar Yo Reparo'),amount:1000.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Edgar Yo Reparo - 30 Contenido'});
-  payments.push({id:'phist_20250221_30',date:'2025-02-21',clientId:findId('Vicky Becci'),amount:30.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Testimonial Edicion - Vicky Becci'});
-  payments.push({id:'phist_20250226_300',date:'2025-02-26',clientId:findId('Vicky Becci'),amount:300.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Mentoria Vicky Becci'});
-  payments.push({id:'phist_20250227_1200',date:'2025-02-27',clientId:findId('Juan Suarez'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Juan Suarez - VSL + Landing'});
-  payments.push({id:'phist_20250302_720',date:'2025-03-02',clientId:findId('Agus Nievas'),amount:720.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Agus Nievas - Copywritter'});
-  payments.push({id:'phist_20250305_2000',date:'2025-03-05',clientId:findId('Cherry Mediavilla'),amount:2000.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Cherry Mediavilla - 30 piezas + historias + emails'});
-  payments.push({id:'phist_20250306_800',date:'2025-03-06',clientId:findId('Metier Studio'),amount:800.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Metier Studio - 20 Contenido'});
-  payments.push({id:'phist_20250307_1500',date:'2025-03-07',clientId:findId('Vicky Becci'),amount:1500.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Vicky Becci - 3 meses x 30 videos (falta pagar 1500)'});
-  payments.push({id:'phist_20250309_60',date:'2025-03-09',clientId:findId('Vicky Becci'),amount:60.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'2 Anuncios - Vicky Becci'});
-  payments.push({id:'phist_20250310_800',date:'2025-03-10',clientId:findId('Belu Bielewicz'),amount:800.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Belu Bielewicz - 20 Contenidos'});
-  payments.push({id:'phist_20250312_350',date:'2025-03-12',clientId:findId('Vicky Becci'),amount:350.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'18 Portadas Skool - Vicky Becci'});
-  payments.push({id:'phist_20250313_1300',date:'2025-03-13',clientId:findId('Maxi Robles'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Maxi 30 contenidos + ADS + Editable Testimonial + 3 testimon'});
-  payments.push({id:'phist_20250315_1300',date:'2025-03-15',clientId:findId('Gofurgo'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Gofurgo - 30 Contenido'});
-  payments.push({id:'phist_20250316_1400',date:'2025-03-16',clientId:findId('Marketingconmaria'),amount:1400.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250320_500',date:'2025-03-20',clientId:findId('Edgar Yo Reparo'),amount:500.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Edgar Yo Reparo - 30 Contenido'});
-  payments.push({id:'phist_20250321_90',date:'2025-03-21',clientId:findId('Vicky Becci'),amount:90.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'6 Anuncios - Vicky Becci parte 2'});
-  payments.push({id:'phist_20250322_150',date:'2025-03-22',clientId:findId('Vicky Becci'),amount:150.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Edicion Podcast - Vicky Becci'});
-  payments.push({id:'phist_20250324_300',date:'2025-03-24',clientId:findId('Vicky Becci'),amount:300.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'2 Long Form - Vicky Becci'});
-  payments.push({id:'phist_20250325_250',date:'2025-03-25',clientId:findId('Belu Bielewicz'),amount:250.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Belu Bielewicz - Diseño grafico de los dos cursos (faltan 17'});
-  payments.push({id:'phist_20250327_90',date:'2025-03-27',clientId:findId('Vicky Becci'),amount:90.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'3 Edicion Testimonial - Vicky Becci'});
-  payments.push({id:'phist_20250331_400',date:'2025-03-31',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20250401_1875',date:'2025-04-01',clientId:findId('Agus Nievas'),amount:1875.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Agus Nievas'});
-  payments.push({id:'phist_20250402_1750',date:'2025-04-02',clientId:findId('Belu Bielewicz'),amount:1750.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Belu Bielewicz - Diseño grafico de los dos cursos'});
-  payments.push({id:'phist_20250405_1480',date:'2025-04-05',clientId:findId('Cherry Mediavilla'),amount:1480.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
-  payments.push({id:'phist_20250406_800',date:'2025-04-06',clientId:findId('Metier Studio'),amount:800.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Metier Studio - 20 Contenido'});
-  payments.push({id:'phist_20250407_1500',date:'2025-04-07',clientId:findId('Vicky Becci'),amount:1500.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Vicky Becci - 3 meses x 30 videos'});
-  payments.push({id:'phist_20250409_30',date:'2025-04-09',clientId:findId('Maxi Robles'),amount:30.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Banner YT - Maxi Robles'});
-  payments.push({id:'phist_20250411_780',date:'2025-04-11',clientId:findId('Vicky Becci'),amount:780.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Brocchure - Vicky Becci'});
-  payments.push({id:'phist_20250412_90',date:'2025-04-12',clientId:findId('Vicky Becci'),amount:90.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'3 Edicion Testimoniales - Vicky Becci'});
-  payments.push({id:'phist_20250413_1300',date:'2025-04-13',clientId:findId('Maxi Robles'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Maxi 30 contenidos + ADS + Editable Testimonial + 3 testimon'});
-  payments.push({id:'phist_20250414_30',date:'2025-04-14',clientId:findId('Maxi Robles'),amount:30.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Maxi - Testimonial extra de marzo'});
-  payments.push({id:'phist_20250415_1320',date:'2025-04-15',clientId:findId('Gofurgo'),amount:1320.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Gofurgo - 30 Contenido'});
-  payments.push({id:'phist_20250416_1400',date:'2025-04-16',clientId:findId('Marketingconmaria'),amount:1400.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250418_1890',date:'2025-04-18',clientId:findId('Delfi Menendez'),amount:1890.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Delfi Menendez 15 contenidos x 3 meses'});
-  payments.push({id:'phist_20250420_100',date:'2025-04-20',clientId:findId('Vicky Becci'),amount:100.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Calendario + Video explicativo - Vicky Becci'});
-  payments.push({id:'phist_20250421_60',date:'2025-04-21',clientId:findId('Maxi Robles'),amount:60.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Maxi - Testimonial extra de abril'});
-  payments.push({id:'phist_20250422_880',date:'2025-04-22',clientId:findId('Vicky Becci'),amount:880.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Revista Digital - Vicky Becci'});
-  payments.push({id:'phist_20250424_1200',date:'2025-04-24',clientId:findId('Belu Bielewicz'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Belu Bielewicz - 30 Contenidos'});
-  payments.push({id:'phist_20250428_1200',date:'2025-04-28',clientId:findId('Juan Suarez'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Juan Suarez - 30 contenidos'});
-  payments.push({id:'phist_20250430_400',date:'2025-04-30',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20250502_400',date:'2025-05-02',clientId:findId('Agus Nievas'),amount:400.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Agus Nievas'});
-  payments.push({id:'phist_20250506_600',date:'2025-05-06',clientId:findId('Jula Arquitectura'),amount:600.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Jula Arquitectura - 15 contenidos'});
-  payments.push({id:'phist_20250507_1200',date:'2025-05-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20250513_1300',date:'2025-05-13',clientId:findId('Maxi Robles'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Maxi 30 contenidos + ADS + Editable Testimonial + 3 testimon'});
-  payments.push({id:'phist_20250514_195',date:'2025-05-14',clientId:findId('Juan Suarez'),amount:195.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Juan Suarez - Edicion + copy 5 videos anuncios + 3 piezas'});
-  payments.push({id:'phist_20250515_1387',date:'2025-05-15',clientId:findId('Gofurgo'),amount:1387.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Gofurgo - 30 Contenido'});
-  payments.push({id:'phist_20250516_1400',date:'2025-05-16',clientId:findId('Marketingconmaria'),amount:1400.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250519_80',date:'2025-05-19',clientId:findId('Juan Suarez'),amount:80.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Juan Suarez - 3 Piezas ADS + 1 video'});
-  payments.push({id:'phist_20250520_300',date:'2025-05-20',clientId:findId('Vicky Becci'),amount:300.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Vicky Becci - 10 ads'});
-  payments.push({id:'phist_20250522_90',date:'2025-05-22',clientId:findId('Language Journeys'),amount:90.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Language Journey - 3 Ads'});
-  payments.push({id:'phist_20250523_300',date:'2025-05-23',clientId:findId('Vicky Becci'),amount:300.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'20 videos editados - Vicky Becci para clienta'});
-  payments.push({id:'phist_20250524_800',date:'2025-05-24',clientId:findId('Belu Bielewicz'),amount:800.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Belu Bielewicz - 20 Contenidos'});
-  payments.push({id:'phist_20250528_300',date:'2025-05-28',clientId:findId('Vicky Becci'),amount:300.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Edicion 2 podcast  - Vicky Becci'});
-  payments.push({id:'phist_20250529_1480',date:'2025-05-29',clientId:findId('Cherry Mediavilla'),amount:1480.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
-  payments.push({id:'phist_20250531_400',date:'2025-05-31',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20250601_200',date:'2025-06-01',clientId:findId('Agus Nievas'),amount:200.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Agus Nievas'});
-  payments.push({id:'phist_20250605_2475',date:'2025-06-05',clientId:findId('Vicky Becci'),amount:2475.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Vicky Becci - 3 meses x 60 videos (falta 2475)'});
-  payments.push({id:'phist_20250606_600',date:'2025-06-06',clientId:findId('Jula Arquitectura'),amount:600.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Jula Arquitectura - 15 contenidos'});
-  payments.push({id:'phist_20250607_800',date:'2025-06-07',clientId:findId('Metier Studio'),amount:800.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20250608_700',date:'2025-06-08',clientId:findId('Taller 215'),amount:700.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Taller 215 - 15 contenidos'});
-  payments.push({id:'phist_20250612_1200',date:'2025-06-12',clientId:findId('Juan Suarez'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Juan Suarez - 30 contenidos'});
-  payments.push({id:'phist_20250613_1300',date:'2025-06-13',clientId:findId('Maxi Robles'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Maxi 30 contenidos + ADS + Editable Testimonial + 3 testimon'});
-  payments.push({id:'phist_20250615_1300',date:'2025-06-15',clientId:findId('Gofurgo'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Gofurgo - 30 Contenido'});
-  payments.push({id:'phist_20250616_1400',date:'2025-06-16',clientId:findId('Marketingconmaria'),amount:1400.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250622_20',date:'2025-06-22',clientId:findId('Vicky Becci'),amount:20.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Portadita Skool - Vicky Becci'});
-  payments.push({id:'phist_20250623_150',date:'2025-06-23',clientId:findId('Vicky Becci'),amount:150.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Edicion 3 testimonios - Vicky Becci'});
-  payments.push({id:'phist_20250624_800',date:'2025-06-24',clientId:findId('Belu Bielewicz'),amount:800.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Belu Bielewicz - 20 Contenidos'});
-  payments.push({id:'phist_20250626_1677',date:'2025-06-26',clientId:findId('Cherry Mediavilla'),amount:1677.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
-  payments.push({id:'phist_20250630_400',date:'2025-06-30',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20250705_2475',date:'2025-07-05',clientId:findId('Vicky Becci'),amount:2475.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Vicky Becci - 3 meses x 60 videos'});
-  payments.push({id:'phist_20250706_600',date:'2025-07-06',clientId:findId('Jula Arquitectura'),amount:600.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Jula Arquitectura - 15 contenidos'});
-  payments.push({id:'phist_20250707_1200',date:'2025-07-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20250708_150',date:'2025-07-08',clientId:findId('Vicky Becci'),amount:150.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Vicky Becci - podcast'});
-  payments.push({id:'phist_20250712_700',date:'2025-07-12',clientId:findId('Juli Cotti'),amount:700.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Juli Cotti - 15 contenidos'});
-  payments.push({id:'phist_20250713_1500',date:'2025-07-13',clientId:findId('Aldana Bonifazi'),amount:1500.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Aldana Bonifazi - 30 contenidos + asesoria historias'});
-  payments.push({id:'phist_20250714_1300',date:'2025-07-14',clientId:findId('Maxi Robles'),amount:1300.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Maxi 30 contenidos + ADS'});
-  payments.push({id:'phist_20250715_1351',date:'2025-07-15',clientId:findId('Gofurgo'),amount:1351.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Gofurgo - 30 Contenido'});
-  payments.push({id:'phist_20250716_1400',date:'2025-07-16',clientId:findId('Marketingconmaria'),amount:1400.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250722_300',date:'2025-07-22',clientId:findId('Vicky Becci'),amount:300.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'20 Reels Flor Soding - Vicky Becci'});
-  payments.push({id:'phist_20250723_180',date:'2025-07-23',clientId:findId('Vicky Becci'),amount:180.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Revista Digital - Vicky Becci'});
-  payments.push({id:'phist_20250724_800',date:'2025-07-24',clientId:findId('Belu Bielewicz'),amount:800.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Belu Bielewicz - 20 Contenidos'});
-  payments.push({id:'phist_20250728_1200',date:'2025-07-28',clientId:findId('Cherry Mediavilla'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
-  payments.push({id:'phist_20250729_1890',date:'2025-07-29',clientId:findId('Language Journeys'),amount:1890.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Language Journeys'});
-  payments.push({id:'phist_20250731_400',date:'2025-07-31',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20250806_600',date:'2025-08-06',clientId:findId('Jula Arquitectura'),amount:600.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Jula Arquitectura - 15 contenidos'});
-  payments.push({id:'phist_20250807_1200',date:'2025-08-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20250815_1361',date:'2025-08-15',clientId:findId('Gofurgo'),amount:1361.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Gofurgo - 30 Contenido'});
-  payments.push({id:'phist_20250816_1244',date:'2025-08-16',clientId:findId('Marketingconmaria'),amount:1244.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250818_250',date:'2025-08-18',clientId:findId('Vicky Becci'),amount:250.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Miro Vicky Becci'});
-  payments.push({id:'phist_20250819_210',date:'2025-08-19',clientId:findId('Vicky Becci'),amount:210.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'7 Ads Vicky Becci'});
-  payments.push({id:'phist_20250821_100',date:'2025-08-21',clientId:findId('Vicky Becci'),amount:100.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'5 portadas skool - Vicky Becci'});
-  payments.push({id:'phist_20250824_800',date:'2025-08-24',clientId:findId('Belu Bielewicz'),amount:800.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Belu Bielewicz - 20 Contenidos'});
-  payments.push({id:'phist_20250825_2160',date:'2025-08-25',clientId:findId('Compliance Exitoso'),amount:2160.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Compliance Exitoso - 3 meses 15 contenidps'});
-  payments.push({id:'phist_20250826_200',date:'2025-08-26',clientId:findId('Vicky Becci'),amount:200.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Logo Founders - Vicky Becci'});
-  payments.push({id:'phist_20250828_1200',date:'2025-08-28',clientId:findId('Cherry Mediavilla'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Cherry Mediavilla - 30 piezas'});
-  payments.push({id:'phist_20250829_450',date:'2025-08-29',clientId:findId('Vicky Becci'),amount:450.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Vicky Becci - 3 long form'});
-  payments.push({id:'phist_20250831_400',date:'2025-08-31',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20250901_700',date:'2025-09-01',clientId:findId('Juli Cotti'),amount:700.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Juli Cotti - 15 contenidos'});
-  payments.push({id:'phist_20250905_2040',date:'2025-09-05',clientId:findId('Vicky Becci'),amount:2040.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Vicky Becci'});
-  payments.push({id:'phist_20250906_600',date:'2025-09-06',clientId:findId('Jula Arquitectura'),amount:600.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Jula Arquitectura - 15 contenidos'});
-  payments.push({id:'phist_20250907_1200',date:'2025-09-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20250908_250',date:'2025-09-08',clientId:findId('Metier Studio'),amount:250.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'VSL - Metier'});
-  payments.push({id:'phist_20250913_175',date:'2025-09-13',clientId:findId('Language Journeys'),amount:175.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'2 Llamadas Ads - Language Journeys'});
-  payments.push({id:'phist_20250915_1840',date:'2025-09-15',clientId:findId('Gofurgo'),amount:1840.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Gofurgo - 30 Contenido (1650 EUR)'});
-  payments.push({id:'phist_20250916_1244',date:'2025-09-16',clientId:findId('Marketingconmaria'),amount:1244.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Marketingconmaria - 30 Contenido'});
-  payments.push({id:'phist_20250920_100',date:'2025-09-20',clientId:findId('Vicky Becci'),amount:100.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'2 Testimonio - Vicky Becci (julia y rosario, ailin)'});
-  payments.push({id:'phist_20250921_150',date:'2025-09-21',clientId:findId('Vicky Becci'),amount:150.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Podcast Ani Chiban - Vicky Becci'});
-  payments.push({id:'phist_20250923_300',date:'2025-09-23',clientId:findId('Vicky Becci'),amount:300.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'20 Reels Marie - Vicky Becci'});
-  payments.push({id:'phist_20250924_800',date:'2025-09-24',clientId:findId('Belu Bielewicz'),amount:800.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Belu Bielewicz - 20 Contenidos'});
-  payments.push({id:'phist_20250925_140',date:'2025-09-25',clientId:findId('Aldana Bonifazi'),amount:140.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
-  payments.push({id:'phist_20250928_1120',date:'2025-09-28',clientId:findId('Cherry Mediavilla'),amount:1120.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Cherry Mediavilla - 30 piezas'});
-  payments.push({id:'phist_20250929_60',date:'2025-09-29',clientId:findId('Vicky Becci'),amount:60.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'2 Placas ADS - Vicky Becci'});
-  payments.push({id:'phist_20250930_400',date:'2025-09-30',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20251001_700',date:'2025-10-01',clientId:findId('Juli Cotti'),amount:700.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Juli Cotti - 15 contenidos'});
-  payments.push({id:'phist_20251004_700',date:'2025-10-04',clientId:findId('Aldana Bonifazi'),amount:700.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
-  payments.push({id:'phist_20251005_2890',date:'2025-10-05',clientId:findId('Vicky Becci'),amount:2890.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Vicky Becci'});
-  payments.push({id:'phist_20251006_750',date:'2025-10-06',clientId:findId('Dakota Estudio'),amount:750.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Dakota Estudio - 15 contenidos'});
-  payments.push({id:'phist_20251007_1200',date:'2025-10-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20251008_350',date:'2025-10-08',clientId:findId('Language Journeys'),amount:350.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mentoriship Ads - Language Journeys'});
-  payments.push({id:'phist_20251014_580',date:'2025-10-14',clientId:findId('Gofurgo'),amount:580.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Gofurgo - 15 Contenido 500 EUR'});
-  payments.push({id:'phist_20251015_700',date:'2025-10-15',clientId:findId('Taller 215'),amount:700.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Taller 215 - 15 contenidos'});
-  payments.push({id:'phist_20251023_1800',date:'2025-10-23',clientId:findId('Mateo Quaintenne'),amount:1800.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mateo Quainteanne'});
-  payments.push({id:'phist_20251024_800',date:'2025-10-24',clientId:findId('Belu Bielewicz'),amount:800.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Belu Bielewicz - 20 Contenidos'});
-  payments.push({id:'phist_20251026_700',date:'2025-10-26',clientId:findId('Flor Hermann'),amount:700.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Flor Hermann - 15 piezas de contenido'});
-  payments.push({id:'phist_20251027_60',date:'2025-10-27',clientId:findId('Language Journeys'),amount:60.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Language Journey - 2 Ads'});
-  payments.push({id:'phist_20251029_1890',date:'2025-10-29',clientId:findId('Language Journeys'),amount:1890.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Language Journeys - 15 piezas x 3 meses'});
-  payments.push({id:'phist_20251028_1200',date:'2025-10-28',clientId:findId('Cherry Mediavilla'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Cherry Mediavilla - 30 piezas'});
-  payments.push({id:'phist_20251030_750',date:'2025-10-30',clientId:findId('Lucia Armstrong'),amount:750.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Lucia Armstrong - 15 piezas'});
-  payments.push({id:'phist_20251031_400',date:'2025-10-31',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20251104_700',date:'2025-11-04',clientId:findId('Aldana Bonifazi'),amount:700.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
-  payments.push({id:'phist_20251107_1200',date:'2025-11-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20251108_410',date:'2025-11-08',clientId:findId('Language Journeys'),amount:410.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mentoriship Ads - Language Journeys'});
-  payments.push({id:'phist_20251111_750',date:'2025-11-11',clientId:findId('Anabella Rabinovich'),amount:750.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Anabella Rabinovich - 15 piezas'});
-  payments.push({id:'phist_20251114_700',date:'2025-11-14',clientId:findId('Taller 215'),amount:700.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Taller 215 - 15 contenidos'});
-  payments.push({id:'phist_20251128_1800',date:'2025-11-28',clientId:findId('Mateo Quaintenne'),amount:1800.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mateo Quanteianne'});
-  payments.push({id:'phist_20251130_400',date:'2025-11-30',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20251202_300',date:'2025-12-02',clientId:findId('Den Dvorkin'),amount:300.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Ads - Den Dvorkin'});
-  payments.push({id:'phist_20251204_700',date:'2025-12-04',clientId:findId('Aldana Bonifazi'),amount:700.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
-  payments.push({id:'phist_20251205_1100',date:'2025-12-05',clientId:findId('Metier Studio'),amount:1100.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Produccion Metier'});
-  payments.push({id:'phist_20251206_750',date:'2025-12-06',clientId:findId('Marconi Silva Arquitectos'),amount:750.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Marconi Silva Arquitectos - 15 publicaciones'});
-  payments.push({id:'phist_20251207_1200',date:'2025-12-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20251211_750',date:'2025-12-11',clientId:findId('Eugenia Cats'),amount:750.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Eugenia Cats - 15 piezas de contenido'});
-  payments.push({id:'phist_20251217_250',date:'2025-12-17',clientId:findId('Vicky Becci'),amount:250.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'10 ads sin IA - Vicky Becci'});
-  payments.push({id:'phist_20251224_360',date:'2025-12-24',clientId:findId('Vicky Becci'),amount:360.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Vicky Becci - contenido de diciembre'});
-  payments.push({id:'phist_20251228_750',date:'2025-12-28',clientId:findId('Lucia Armstrong'),amount:750.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Lucia Armstrong - 15 piezas'});
-  payments.push({id:'phist_20251230_1800',date:'2025-12-30',clientId:findId('Mateo Quaintenne'),amount:1800.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Mateo Quanteianne'});
-  payments.push({id:'phist_20251231_400',date:'2025-12-31',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20260103_750',date:'2026-01-03',clientId:findId('Anabella Rabinovich'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Anabella Rabinovich - 15 piezas'});
-  payments.push({id:'phist_20260104_560',date:'2026-01-04',clientId:findId('Aldana Bonifazi'),amount:560.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Aldana Bonifazi - 15 contenidos'});
-  payments.push({id:'phist_20260107_1200',date:'2026-01-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20260108_1000',date:'2026-01-08',clientId:findId('Vicky Becci'),amount:1000.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Vicky Becci - 20 piezas x 3 meses (1/2)'});
-  payments.push({id:'phist_20260109_450',date:'2026-01-09',clientId:findId('Eugenia Cats'),amount:450.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Ads - Eugenia Cats'});
-  payments.push({id:'phist_20260112_2160',date:'2026-01-12',clientId:findId('Compliance Exitoso'),amount:2160.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Compliance Exitoso - 3 meses 15 contenidps'});
-  payments.push({id:'phist_20260113_700',date:'2026-01-13',clientId:findId('Flor Hermann'),amount:700.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Flor Hermann - 15 piezas de contenido'});
-  payments.push({id:'phist_20260114_900',date:'2026-01-14',clientId:findId('La Maria'),amount:900.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'La Maria - 20 piezas de contenido'});
-  payments.push({id:'phist_20260116_550',date:'2026-01-16',clientId:findId('Basaarq'),amount:550.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Landing Page - Basaarq'});
-  payments.push({id:'phist_20260117_400',date:'2026-01-17',clientId:findId('Vicky Becci'),amount:400.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Mentoria - Vicky Becci'});
-  payments.push({id:'phist_20260119_250',date:'2026-01-19',clientId:findId('Mateo Quaintenne'),amount:250.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'4 long form - Mateo Quainntenne'});
-  payments.push({id:'phist_20260120_750',date:'2026-01-20',clientId:findId('Build a Home'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'15 piezas - Build a Home'});
-  payments.push({id:'phist_20260121_1000',date:'2026-01-21',clientId:findId('Eugenia Cats'),amount:1000.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Produccion 1 dia - Eugenia Cats'});
-  payments.push({id:'phist_20260122_750',date:'2026-01-22',clientId:findId('Hatch Arquitectura'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Hatch Arquitectura - 15 piezas'});
-  payments.push({id:'phist_20260123_150',date:'2026-01-23',clientId:findId('Vicky Becci'),amount:150.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'1 Long form - Vicky Becci'});
-  payments.push({id:'phist_20260124_700',date:'2026-01-24',clientId:findId('Taller 215'),amount:700.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Taller 215 - 15 publicaciones'});
-  payments.push({id:'phist_20260125_314',date:'2026-01-25',clientId:findId('Den Dvorkin'),amount:314.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Ads - Den Dvorkin'});
-  payments.push({id:'phist_20260126_2010',date:'2026-01-26',clientId:findId('Language Journeys'),amount:2010.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Language Journeys - 15 piezas x 3 meses'});
-  payments.push({id:'phist_20260127_1800',date:'2026-01-27',clientId:findId('Mateo Quaintenne'),amount:1800.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Mateo Quanteianne'});
-  payments.push({id:'phist_20260128_750',date:'2026-01-28',clientId:findId('Lucia Armstrong'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Lucia Armstrong - 15 piezas'});
-  payments.push({id:'phist_20260129_750',date:'2026-01-29',clientId:findId('Marconi Silva Arquitectos'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Marconi Silva Arquitectos - 15 publicaciones'});
-  payments.push({id:'phist_20260130_750',date:'2026-01-30',clientId:findId('Eugenia Cats'),amount:750.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Eugenia Cats - 15 publicaciones'});
-  payments.push({id:'phist_20260131_400',date:'2026-01-31',clientId:findId('Basaarq'),amount:400.0,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Ads - Basaarq'});
-  payments.push({id:'phist_20260203_1050',date:'2026-02-03',clientId:findId('MA Arquitectura'),amount:1050.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'MA Arquitectura - 15 piezas + anuncios'});
-  payments.push({id:'phist_20260204_560',date:'2026-02-04',clientId:findId('Aldana Bonifazi'),amount:560.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Aldana Bonifazi - 12 contenidos'});
-  payments.push({id:'phist_20260207_1200',date:'2026-02-07',clientId:findId('Metier Studio'),amount:1200.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Metier Studio - 20 Contenido + anuncios'});
-  payments.push({id:'phist_20260210_2100',date:'2026-02-10',clientId:findId('Modula Estudio'),amount:2100.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Modula Estudio - 15 contenidos x 3 meses'});
-  payments.push({id:'phist_20260215_75',date:'2026-02-15',clientId:findId('Mateo Quaintenne'),amount:75.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'VSL - Mateo Quaintenne'});
-  payments.push({id:'phist_20260218_150',date:'2026-02-18',clientId:findId('Den Dvorkin'),amount:150.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Edicion 10 videos - Den Dvorkin'});
-  payments.push({id:'phist_20260220_2270',date:'2026-02-20',clientId:findId('Angieylu'),amount:2270.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Angie y Lu - 30 piezas + long form'});
-  payments.push({id:'phist_20260221_105',date:'2026-02-21',clientId:findId('Mateo Quaintenne'),amount:105.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'3 ads de IA - Mateo Quaintenne'});
-  payments.push({id:'phist_20260222_105',date:'2026-02-22',clientId:findId('Mateo Quaintenne'),amount:105.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'3 ads de creadoras - Mateo Quaintenne'});
-  payments.push({id:'phist_20260223_750',date:'2026-02-23',clientId:findId('Pasion Retail'),amount:750.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Passion Retail - 15 contenidos'});
-  payments.push({id:'phist_20260224_700',date:'2026-02-24',clientId:findId('Flor Hermann'),amount:700.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Flor Hermann - 15 piezas de contenido 15/02'});
-  payments.push({id:'phist_20260225_300',date:'2026-02-25',clientId:findId('Den Dvorkin'),amount:300.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Ads - Den Dvorkin'});
-  payments.push({id:'phist_20260226_2340',date:'2026-02-26',clientId:findId('Mateo Quaintenne'),amount:2340.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Mateo Quanteianne'});
-  payments.push({id:'phist_20260227_750',date:'2026-02-27',clientId:findId('Lucia Armstrong'),amount:750.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Lucia Armstrong - 15 piezas'});
-  payments.push({id:'phist_20260228_750',date:'2026-02-28',clientId:findId('Eugenia Cats'),amount:750.0,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Eugenia Cats - 15 publicaciones'});
-  payments.push({id:'phist_20260304_560',date:'2026-03-04',clientId:findId('Aldana Bonifazi'),amount:560.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Aldana Bonifazi - 12 contenidos'});
-  payments.push({id:'phist_20260311_900',date:'2026-03-11',clientId:findId('La Maria'),amount:900.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'La Maria - 20 piezas de contenido'});
-  payments.push({id:'phist_20260313_750',date:'2026-03-13',clientId:findId('Hatch Arquitectura'),amount:750.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Hatch Arquitectura - 15 piezas'});
-  payments.push({id:'phist_20260317_450',date:'2026-03-17',clientId:findId('Angieylu'),amount:450.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Edicion 100 videos Angieylu'});
-  payments.push({id:'phist_20260320_300',date:'2026-03-20',clientId:findId('Marconi Silva Arquitectos'),amount:300.0,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Marconi Silva Arquitectos - 6 publicaciones'});
+  // NOW define findId — all clients are in memory
+  const findId = name => clients.find(cl=>cl.name===name)?.id || null;
 
-  // Deduplicate payments
+  // All historical payments (311 total)
+  payments.push({id:'ph_20240422_3600_Vicky',date:'2024-04-22',clientId:findId('Vicky Becci'),amount:3600,fees:0,method:'Transferencia USD',period:'Abril_2024',desc:'Vicky Becci - Pago x3 meses'});
+  payments.push({id:'ph_20240703_350_Vicky',date:'2024-07-03',clientId:findId('Vicky Becci'),amount:350,fees:0,method:'Transferencia USD',period:'Julio_2024',desc:'Vickybecci - Clases + Presentacion VSL'});
+  payments.push({id:'ph_20240808_2600_Vicky',date:'2024-08-08',clientId:findId('Vicky Becci'),amount:2600,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'3 meses de content x 15 dias'});
+  payments.push({id:'ph_20240903_200_Vicky',date:'2024-09-03',clientId:findId('Vicky Becci'),amount:200,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Clases coach Vicky Becci'});
+  payments.push({id:'ph_20241002_200_Vicky',date:'2024-10-02',clientId:findId('Vicky Becci'),amount:200,fees:0,method:'Transferencia USD',period:'Octubre_2024',desc:'Clases coach Vicky Becci'});
+  payments.push({id:'ph_20241103_200_Vicky',date:'2024-11-03',clientId:findId('Vicky Becci'),amount:200,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Clases coach Vicky Becci'});
+  payments.push({id:'ph_20241108_600_Vicky',date:'2024-11-08',clientId:findId('Vicky Becci'),amount:600,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Vicky Becci - 1 mes content x 15 dias'});
+  payments.push({id:'ph_20241128_200_Vicky',date:'2024-11-28',clientId:findId('Vicky Becci'),amount:200,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Clase de Coaching - Vicky Becci'});
+  payments.push({id:'ph_20241206_1500_Vicky',date:'2024-12-06',clientId:findId('Vicky Becci'),amount:1500,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Vicky Becci - 30 videos + mentoria'});
+  payments.push({id:'ph_20250107_1500_Vicky',date:'2025-01-07',clientId:findId('Vicky Becci'),amount:1500,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Vicky Becci - 30 videos + mentoria'});
+  payments.push({id:'ph_20250202_200_Vicky',date:'2025-02-02',clientId:findId('Vicky Becci'),amount:200,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Mentoria Vicky Becci'});
+  payments.push({id:'ph_20250205_200_Vicky',date:'2025-02-05',clientId:findId('Vicky Becci'),amount:200,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'4 Clases grabadas Mastery - Vicky Becci'});
+  payments.push({id:'ph_20250208_75_Vicky',date:'2025-02-08',clientId:findId('Vicky Becci'),amount:75,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Anuncios Vicky'});
+  payments.push({id:'ph_20250209_45_Vicky',date:'2025-02-09',clientId:findId('Vicky Becci'),amount:45,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'3 Anuncios editados - Vicky Becci'});
+  payments.push({id:'ph_20250217_100_Vicky',date:'2025-02-17',clientId:findId('Vicky Becci'),amount:100,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Template Testimonio - Vicky Becci'});
+  payments.push({id:'ph_20250218_100_Vicky',date:'2025-02-18',clientId:findId('Vicky Becci'),amount:100,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Videos 10 videos Sonia - Vicky Becci'});
+  payments.push({id:'ph_20250219_300_Vicky',date:'2025-02-19',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'2 Long Form - Vicky Becci'});
+  payments.push({id:'ph_20250221_30_Vicky',date:'2025-02-21',clientId:findId('Vicky Becci'),amount:30,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Testimonial Edicion - Vicky Becci'});
+  payments.push({id:'ph_20250226_300_Vicky',date:'2025-02-26',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Mentoria Vicky Becci'});
+  payments.push({id:'ph_20250307_1500_Vicky',date:'2025-03-07',clientId:findId('Vicky Becci'),amount:1500,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Vicky Becci - 3 meses x 30 videos'});
+  payments.push({id:'ph_20250309_60_Vicky',date:'2025-03-09',clientId:findId('Vicky Becci'),amount:60,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'2 Anuncios - Vicky Becci'});
+  payments.push({id:'ph_20250312_350_Vicky',date:'2025-03-12',clientId:findId('Vicky Becci'),amount:350,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'18 Portadas Skool - Vicky Becci'});
+  payments.push({id:'ph_20250321_90_Vicky',date:'2025-03-21',clientId:findId('Vicky Becci'),amount:90,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'6 Anuncios - Vicky Becci'});
+  payments.push({id:'ph_20250322_150_Vicky',date:'2025-03-22',clientId:findId('Vicky Becci'),amount:150,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Edicion Podcast - Vicky Becci'});
+  payments.push({id:'ph_20250324_300_Vicky',date:'2025-03-24',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'2 Long Form - Vicky Becci'});
+  payments.push({id:'ph_20250327_90_Vicky',date:'2025-03-27',clientId:findId('Vicky Becci'),amount:90,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'3 Edicion Testimonial - Vicky Becci'});
+  payments.push({id:'ph_20250331_400_Vicky',date:'2025-03-31',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20250407_1500_Vicky',date:'2025-04-07',clientId:findId('Vicky Becci'),amount:1500,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Vicky Becci - 3 meses x 30 videos'});
+  payments.push({id:'ph_20250411_780_Vicky',date:'2025-04-11',clientId:findId('Vicky Becci'),amount:780,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Brocchure - Vicky Becci'});
+  payments.push({id:'ph_20250412_90_Vicky',date:'2025-04-12',clientId:findId('Vicky Becci'),amount:90,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'3 Edicion Testimoniales - Vicky Becci'});
+  payments.push({id:'ph_20250419_200_Vicky',date:'2025-04-19',clientId:findId('Vicky Becci'),amount:200,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Pagina Web - Vicky'});
+  payments.push({id:'ph_20250420_100_Vicky',date:'2025-04-20',clientId:findId('Vicky Becci'),amount:100,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Calendario + Video explicativo - Vicky Becci'});
+  payments.push({id:'ph_20250422_880_Vicky',date:'2025-04-22',clientId:findId('Vicky Becci'),amount:880,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Revista Digital - Vicky Becci'});
+  payments.push({id:'ph_20250430_400_Vicky',date:'2025-04-30',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20250520_300_Vicky',date:'2025-05-20',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Vicky Becci - 10 ads'});
+  payments.push({id:'ph_20250523_300_Vicky',date:'2025-05-23',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'20 videos editados - Vicky Becci'});
+  payments.push({id:'ph_20250528_300_Vicky',date:'2025-05-28',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Edicion 2 podcast - Vicky Becci'});
+  payments.push({id:'ph_20250531_400_Vicky',date:'2025-05-31',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20250605_2475_Vicky',date:'2025-06-05',clientId:findId('Vicky Becci'),amount:2475,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Vicky Becci - 3 meses x 60 videos'});
+  payments.push({id:'ph_20250622_20_Vicky',date:'2025-06-22',clientId:findId('Vicky Becci'),amount:20,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Portadita Skool - Vicky Becci'});
+  payments.push({id:'ph_20250623_150_Vicky',date:'2025-06-23',clientId:findId('Vicky Becci'),amount:150,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Edicion 3 testimonios - Vicky Becci'});
+  payments.push({id:'ph_20250630_400_Vicky',date:'2025-06-30',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20250705_2475_Vicky',date:'2025-07-05',clientId:findId('Vicky Becci'),amount:2475,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Vicky Becci - 3 meses x 60 videos'});
+  payments.push({id:'ph_20250708_150_Vicky',date:'2025-07-08',clientId:findId('Vicky Becci'),amount:150,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Vicky Becci - podcast'});
+  payments.push({id:'ph_20250722_300_Vicky',date:'2025-07-22',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'20 Reels Flor Soding - Vicky Becci'});
+  payments.push({id:'ph_20250723_180_Vicky',date:'2025-07-23',clientId:findId('Vicky Becci'),amount:180,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Revista Digital - Vicky Becci'});
+  payments.push({id:'ph_20250726_150_Vicky',date:'2025-07-26',clientId:findId('Vicky Becci'),amount:150,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'3 Testimonial Vicky'});
+  payments.push({id:'ph_20250727_150_Vicky',date:'2025-07-27',clientId:findId('Vicky Becci'),amount:150,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'1 Long form - Vicky Becci'});
+  payments.push({id:'ph_20250731_400_Vicky',date:'2025-07-31',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20250818_250_Vicky',date:'2025-08-18',clientId:findId('Vicky Becci'),amount:250,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Miro Vicky Becci'});
+  payments.push({id:'ph_20250819_210_Vicky',date:'2025-08-19',clientId:findId('Vicky Becci'),amount:210,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'7 Ads Vicky Becci'});
+  payments.push({id:'ph_20250820_250_Vicky',date:'2025-08-20',clientId:findId('Vicky Becci'),amount:250,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Testimonial Vicky'});
+  payments.push({id:'ph_20250821_100_Vicky',date:'2025-08-21',clientId:findId('Vicky Becci'),amount:100,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'5 portadas skool - Vicky Becci'});
+  payments.push({id:'ph_20250826_200_Vicky',date:'2025-08-26',clientId:findId('Vicky Becci'),amount:200,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Logo Founders - Vicky Becci'});
+  payments.push({id:'ph_20250827_150_Vicky',date:'2025-08-27',clientId:findId('Vicky Becci'),amount:150,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Podcast Estefi - Vicky Becci'});
+  payments.push({id:'ph_20250829_450_Vicky',date:'2025-08-29',clientId:findId('Vicky Becci'),amount:450,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Vicky Becci - 3 long form'});
+  payments.push({id:'ph_20250831_400_Vicky',date:'2025-08-31',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20250905_2040_Vicky',date:'2025-09-05',clientId:findId('Vicky Becci'),amount:2040,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Vicky Becci'});
+  payments.push({id:'ph_20250920_100_Vicky',date:'2025-09-20',clientId:findId('Vicky Becci'),amount:100,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'2 Testimonio - Vicky Becci'});
+  payments.push({id:'ph_20250921_150_Vicky',date:'2025-09-21',clientId:findId('Vicky Becci'),amount:150,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Podcast Ani Chiban - Vicky Becci'});
+  payments.push({id:'ph_20250922_300_Vicky',date:'2025-09-22',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'2 Long Form Vicky'});
+  payments.push({id:'ph_20250923_300_Vicky',date:'2025-09-23',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'20 Reels Marie - Vicky Becci'});
+  payments.push({id:'ph_20250926_300_Vicky',date:'2025-09-26',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'VSL - Vicky'});
+  payments.push({id:'ph_20250929_60_Vicky',date:'2025-09-29',clientId:findId('Vicky Becci'),amount:60,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'2 Placas ADS - Vicky Becci'});
+  payments.push({id:'ph_20250930_400_Vicky',date:'2025-09-30',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20251005_2890_Vicky',date:'2025-10-05',clientId:findId('Vicky Becci'),amount:2890,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Vicky Becci'});
+  payments.push({id:'ph_20251013_1500_Vicky',date:'2025-10-13',clientId:findId('Vicky Becci'),amount:1500,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Multicuenta - Vicky Becci'});
+  payments.push({id:'ph_20251020_1000_Vicky',date:'2025-10-20',clientId:findId('Vicky Becci'),amount:1000,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Lanzamiento Vicky'});
+  payments.push({id:'ph_20251031_400_Vicky',date:'2025-10-31',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20251112_70_Vicky',date:'2025-11-12',clientId:findId('Vicky Becci'),amount:70,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'7 hooks con IA - Vicky'});
+  payments.push({id:'ph_20251118_40_Vicky',date:'2025-11-18',clientId:findId('Vicky Becci'),amount:40,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Modificacion 4 ads - Vicky'});
+  payments.push({id:'ph_20251125_240_Vicky',date:'2025-11-25',clientId:findId('Vicky Becci'),amount:240,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Ads Vicky'});
+  payments.push({id:'ph_20251126_100_Vicky',date:'2025-11-26',clientId:findId('Vicky Becci'),amount:100,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Testimoniales Paula + Lucia'});
+  payments.push({id:'ph_20251127_300_Vicky',date:'2025-11-27',clientId:findId('Vicky Becci'),amount:300,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Long form 2 Vicky'});
+  payments.push({id:'ph_20251130_400_Vicky',date:'2025-11-30',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20251210_50_Vicky',date:'2025-12-10',clientId:findId('Vicky Becci'),amount:50,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Testimonial Vicky'});
+  payments.push({id:'ph_20251217_250_Vicky',date:'2025-12-17',clientId:findId('Vicky Becci'),amount:250,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'10 ads sin IA - Vicky Becci'});
+  payments.push({id:'ph_20251222_600_Vicky',date:'2025-12-22',clientId:findId('Vicky Becci'),amount:600,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'6 clases programa Vicky'});
+  payments.push({id:'ph_20251224_360_Vicky',date:'2025-12-24',clientId:findId('Vicky Becci'),amount:360,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Vicky Becci - contenido de diciembre'});
+  payments.push({id:'ph_20251231_400_Vicky',date:'2025-12-31',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20260108_1000_Vicky',date:'2026-01-08',clientId:findId('Vicky Becci'),amount:1000,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Vicky Becci - 20 piezas x 3 meses'});
+  payments.push({id:'ph_20260117_400_Vicky',date:'2026-01-17',clientId:findId('Vicky Becci'),amount:400,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Mentoria - Vicky Becci'});
+  payments.push({id:'ph_20260123_150_Vicky',date:'2026-01-23',clientId:findId('Vicky Becci'),amount:150,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'1 Long form - Vicky Becci'});
+  payments.push({id:'ph_20240522_1300_Gofurg',date:'2024-05-22',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Mayo_2024',desc:'Gofurgo Mallorca - Content - Setter'});
+  payments.push({id:'ph_20240715_1300_Gofurg',date:'2024-07-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Julio_2024',desc:'Gofurgo'});
+  payments.push({id:'ph_20240815_1300_Gofurg',date:'2024-08-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'Gofurgo'});
+  payments.push({id:'ph_20240915_1300_Gofurg',date:'2024-09-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Gofurgo'});
+  payments.push({id:'ph_20241015_1300_Gofurg',date:'2024-10-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Octubre_2024',desc:'Gofurgo'});
+  payments.push({id:'ph_20241115_1300_Gofurg',date:'2024-11-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Gofurgo'});
+  payments.push({id:'ph_20241215_1300_Gofurg',date:'2024-12-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Gofurgo'});
+  payments.push({id:'ph_20250115_1300_Gofurg',date:'2025-01-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Gofurgo - 30 Contenido'});
+  payments.push({id:'ph_20250215_1300_Gofurg',date:'2025-02-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Gofurgo - 30 Contenido'});
+  payments.push({id:'ph_20250315_1300_Gofurg',date:'2025-03-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Gofurgo - 30 Contenido'});
+  payments.push({id:'ph_20250415_1320_Gofurg',date:'2025-04-15',clientId:findId('Gofurgo'),amount:1320,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Gofurgo - 30 Contenido'});
+  payments.push({id:'ph_20250515_1387_Gofurg',date:'2025-05-15',clientId:findId('Gofurgo'),amount:1387,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Gofurgo - 30 Contenido'});
+  payments.push({id:'ph_20250615_1300_Gofurg',date:'2025-06-15',clientId:findId('Gofurgo'),amount:1300,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Gofurgo - 30 Contenido'});
+  payments.push({id:'ph_20250715_1351_Gofurg',date:'2025-07-15',clientId:findId('Gofurgo'),amount:1351,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Gofurgo - 30 Contenido'});
+  payments.push({id:'ph_20250815_1361_Gofurg',date:'2025-08-15',clientId:findId('Gofurgo'),amount:1361,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Gofurgo - 30 Contenido'});
+  payments.push({id:'ph_20250915_1840_Gofurg',date:'2025-09-15',clientId:findId('Gofurgo'),amount:1840,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Gofurgo - 30 Contenido 1650 EUR'});
+  payments.push({id:'ph_20251014_580_Gofurg',date:'2025-10-14',clientId:findId('Gofurgo'),amount:580,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Gofurgo - 15 Contenido 500 EUR'});
+  payments.push({id:'ph_20240916_1200_Market',date:'2024-09-16',clientId:findId('Marketingconmaria'),amount:1200,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Marketingconmaria'});
+  payments.push({id:'ph_20241016_1200_Market',date:'2024-10-16',clientId:findId('Marketingconmaria'),amount:1200,fees:0,method:'Transferencia USD',period:'Octubre_2024',desc:'Marketingconmaria'});
+  payments.push({id:'ph_20241116_1300_Market',date:'2024-11-16',clientId:findId('Marketingconmaria'),amount:1300,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Marketingconmaria'});
+  payments.push({id:'ph_20241216_1400_Market',date:'2024-12-16',clientId:findId('Marketingconmaria'),amount:1400,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Marketingconmaria'});
+  payments.push({id:'ph_20250116_1400_Market',date:'2025-01-16',clientId:findId('Marketingconmaria'),amount:1400,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20250216_1400_Market',date:'2025-02-16',clientId:findId('Marketingconmaria'),amount:1400,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20250316_1400_Market',date:'2025-03-16',clientId:findId('Marketingconmaria'),amount:1400,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20250416_1400_Market',date:'2025-04-16',clientId:findId('Marketingconmaria'),amount:1400,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20250516_1400_Market',date:'2025-05-16',clientId:findId('Marketingconmaria'),amount:1400,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20250616_1400_Market',date:'2025-06-16',clientId:findId('Marketingconmaria'),amount:1400,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20250716_1400_Market',date:'2025-07-16',clientId:findId('Marketingconmaria'),amount:1400,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20250816_1244_Market',date:'2025-08-16',clientId:findId('Marketingconmaria'),amount:1244,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20250916_1244_Market',date:'2025-09-16',clientId:findId('Marketingconmaria'),amount:1244,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Marketingconmaria - 30 Contenido'});
+  payments.push({id:'ph_20240429_750_MaxiR',date:'2024-04-29',clientId:findId('Maxi Robles'),amount:750,fees:0,method:'Transferencia USD',period:'Abril_2024',desc:'Maxi Robles - Content + Setting'});
+  payments.push({id:'ph_20240612_804_MaxiR',date:'2024-06-12',clientId:findId('Maxi Robles'),amount:804,fees:0,method:'Transferencia USD',period:'Junio_2024',desc:'Maxi Robles - Finalizacion del mes'});
+  payments.push({id:'ph_20240614_750_MaxiR',date:'2024-06-14',clientId:findId('Maxi Robles'),amount:750,fees:0,method:'Transferencia USD',period:'Junio_2024',desc:'Maxi Robles - mitad junio/julio'});
+  payments.push({id:'ph_20240713_550_MaxiR',date:'2024-07-13',clientId:findId('Maxi Robles'),amount:550,fees:0,method:'Transferencia USD',period:'Julio_2024',desc:'finalizacion del mes anterior - Maxi'});
+  payments.push({id:'ph_20240801_1300_MaxiR',date:'2024-08-01',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'Maxi mes entero'});
+  payments.push({id:'ph_20240913_1300_MaxiR',date:'2024-09-13',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Maxi mes entero'});
+  payments.push({id:'ph_20241013_1300_MaxiR',date:'2024-10-13',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Octubre_2024',desc:'Maxi mes entero'});
+  payments.push({id:'ph_20241113_1300_MaxiR',date:'2024-11-13',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Maxi mes entero'});
+  payments.push({id:'ph_20241213_1300_MaxiR',date:'2024-12-13',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Maxi mes entero'});
+  payments.push({id:'ph_20250113_1150_MaxiR',date:'2025-01-13',clientId:findId('Maxi Robles'),amount:1150,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Maxi 30 contenidos + ADS'});
+  payments.push({id:'ph_20250213_1510_MaxiR',date:'2025-02-13',clientId:findId('Maxi Robles'),amount:1510,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Maxi 30 contenidos + ADS'});
+  payments.push({id:'ph_20250313_1300_MaxiR',date:'2025-03-13',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Maxi 30 contenidos + ADS'});
+  payments.push({id:'ph_20250409_30_MaxiR',date:'2025-04-09',clientId:findId('Maxi Robles'),amount:30,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Banner YT - Maxi Robles'});
+  payments.push({id:'ph_20250413_1300_MaxiR',date:'2025-04-13',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Maxi 30 contenidos + ADS'});
+  payments.push({id:'ph_20250414_30_MaxiR',date:'2025-04-14',clientId:findId('Maxi Robles'),amount:30,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Maxi - Testimonial extra de marzo'});
+  payments.push({id:'ph_20250421_60_MaxiR',date:'2025-04-21',clientId:findId('Maxi Robles'),amount:60,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Maxi - Testimonial extra de abril'});
+  payments.push({id:'ph_20250513_1300_MaxiR',date:'2025-05-13',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Maxi 30 contenidos + ADS'});
+  payments.push({id:'ph_20250613_1300_MaxiR',date:'2025-06-13',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Maxi 30 contenidos + ADS'});
+  payments.push({id:'ph_20250714_1300_MaxiR',date:'2025-07-14',clientId:findId('Maxi Robles'),amount:1300,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Maxi 30 contenidos + ADS'});
+  payments.push({id:'ph_20240704_1600_Minnto',date:'2024-07-04',clientId:findId('Minntoring'),amount:1600,fees:0,method:'Transferencia USD',period:'Julio_2024',desc:'Minntoring'});
+  payments.push({id:'ph_20240804_1600_Minnto',date:'2024-08-04',clientId:findId('Minntoring'),amount:1600,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'Minntoring'});
+  payments.push({id:'ph_20240904_1600_Minnto',date:'2024-09-04',clientId:findId('Minntoring'),amount:1600,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Minntoring'});
+  payments.push({id:'ph_20241004_1600_Minnto',date:'2024-10-04',clientId:findId('Minntoring'),amount:1600,fees:0,method:'Transferencia USD',period:'Octubre_2024',desc:'Minntoring'});
+  payments.push({id:'ph_20241104_1565_Minnto',date:'2024-11-04',clientId:findId('Minntoring'),amount:1565,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Minntoring'});
+  payments.push({id:'ph_20240520_1470_CaroE',date:'2024-05-20',clientId:findId('Caro Esteves Siri'),amount:1470,fees:0,method:'Transferencia USD',period:'Mayo_2024',desc:'Caro Esteves Siri - Content - Setter - Oferta'});
+  payments.push({id:'ph_20240714_1500_CaroE',date:'2024-07-14',clientId:findId('Caro Esteves Siri'),amount:1500,fees:0,method:'Transferencia USD',period:'Julio_2024',desc:'Caro Esteves Siri'});
+  payments.push({id:'ph_20240814_1000_CaroE',date:'2024-08-14',clientId:findId('Caro Esteves Siri'),amount:1000,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'Caro Esteves Siri'});
+  payments.push({id:'ph_20240914_1000_CaroE',date:'2024-09-14',clientId:findId('Caro Esteves Siri'),amount:1000,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Caro Esteves Siri'});
+  payments.push({id:'ph_20241014_1000_CaroE',date:'2024-10-14',clientId:findId('Caro Esteves Siri'),amount:1000,fees:0,method:'Transferencia USD',period:'Octubre_2024',desc:'Caro Esteves Siri'});
+  payments.push({id:'ph_20241114_570_CaroE',date:'2024-11-14',clientId:findId('Caro Esteves Siri'),amount:570,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Caro Esteves Siri'});
+  payments.push({id:'ph_20241214_1000_CaroE',date:'2024-12-14',clientId:findId('Caro Esteves Siri'),amount:1000,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Caro Esteves Siri'});
+  payments.push({id:'ph_20241217_430_CaroE',date:'2024-12-17',clientId:findId('Caro Esteves Siri'),amount:430,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Caro Esteves Siri - Pago con curso'});
+  payments.push({id:'ph_20250114_1000_CaroE',date:'2025-01-14',clientId:findId('Caro Esteves Siri'),amount:1000,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Caro Esteves Siri - 30 Contenido'});
+  payments.push({id:'ph_20240517_1500_GabyL',date:'2024-05-17',clientId:findId('Gaby Lopez'),amount:1500,fees:0,method:'Transferencia USD',period:'Mayo_2024',desc:'Gaby Lopez - Content + Setter + Oferta'});
+  payments.push({id:'ph_20240705_1500_GabyL',date:'2024-07-05',clientId:findId('Gaby Lopez'),amount:1500,fees:0,method:'Transferencia USD',period:'Julio_2024',desc:'Gaby Lopez'});
+  payments.push({id:'ph_20240805_1500_GabyL',date:'2024-08-05',clientId:findId('Gaby Lopez'),amount:1500,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'Gaby Lopez'});
+  payments.push({id:'ph_20240905_500_GabyL',date:'2024-09-05',clientId:findId('Gaby Lopez'),amount:500,fees:0,method:'Transferencia USD',period:'Septiembre_2024',desc:'Gaby Lopez'});
+  payments.push({id:'ph_20241005_500_GabyL',date:'2024-10-05',clientId:findId('Gaby Lopez'),amount:500,fees:0,method:'Transferencia USD',period:'Octubre_2024',desc:'Gaby Lopez'});
+  payments.push({id:'ph_20250117_2000_Cherry',date:'2025-01-17',clientId:findId('Cherry Mediavilla'),amount:2000,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
+  payments.push({id:'ph_20250305_2000_Cherry',date:'2025-03-05',clientId:findId('Cherry Mediavilla'),amount:2000,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
+  payments.push({id:'ph_20250405_1480_Cherry',date:'2025-04-05',clientId:findId('Cherry Mediavilla'),amount:1480,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
+  payments.push({id:'ph_20250529_1480_Cherry',date:'2025-05-29',clientId:findId('Cherry Mediavilla'),amount:1480,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
+  payments.push({id:'ph_20250626_1677_Cherry',date:'2025-06-26',clientId:findId('Cherry Mediavilla'),amount:1677,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Cherry Mediavilla - 30 piezas + historias'});
+  payments.push({id:'ph_20250728_1200_Cherry',date:'2025-07-28',clientId:findId('Cherry Mediavilla'),amount:1200,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Cherry Mediavilla - 30 piezas'});
+  payments.push({id:'ph_20250823_180_Cherry',date:'2025-08-23',clientId:findId('Cherry Mediavilla'),amount:180,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'10 Ads - Cherry'});
+  payments.push({id:'ph_20250828_1200_Cherry',date:'2025-08-28',clientId:findId('Cherry Mediavilla'),amount:1200,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Cherry Mediavilla - 30 piezas'});
+  payments.push({id:'ph_20250927_150_Cherry',date:'2025-09-27',clientId:findId('Cherry Mediavilla'),amount:150,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'VSL - Cherry'});
+  payments.push({id:'ph_20250928_1120_Cherry',date:'2025-09-28',clientId:findId('Cherry Mediavilla'),amount:1120,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Cherry Mediavilla - 30 piezas'});
+  payments.push({id:'ph_20251028_1200_Cherry',date:'2025-10-28',clientId:findId('Cherry Mediavilla'),amount:1200,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Cherry Mediavilla - 30 piezas'});
+  payments.push({id:'ph_20250310_800_BeluB',date:'2025-03-10',clientId:findId('Belu Bielewicz'),amount:800,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Belu Bielewicz - 20 Contenidos'});
+  payments.push({id:'ph_20250325_250_BeluB',date:'2025-03-25',clientId:findId('Belu Bielewicz'),amount:250,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Belu Bielewicz - Diseno grafico'});
+  payments.push({id:'ph_20250402_1750_BeluB',date:'2025-04-02',clientId:findId('Belu Bielewicz'),amount:1750,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Belu Bielewicz - Diseno grafico dos cursos'});
+  payments.push({id:'ph_20250424_1200_BeluB',date:'2025-04-24',clientId:findId('Belu Bielewicz'),amount:1200,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Belu Bielewicz - 30 Contenidos'});
+  payments.push({id:'ph_20250521_300_BeluB',date:'2025-05-21',clientId:findId('Belu Bielewicz'),amount:300,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'15 portadas Skool - Belu Bielewicz'});
+  payments.push({id:'ph_20250524_800_BeluB',date:'2025-05-24',clientId:findId('Belu Bielewicz'),amount:800,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Belu Bielewicz - 20 Contenidos'});
+  payments.push({id:'ph_20250624_800_BeluB',date:'2025-06-24',clientId:findId('Belu Bielewicz'),amount:800,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Belu Bielewicz - 20 Contenidos'});
+  payments.push({id:'ph_20250724_800_BeluB',date:'2025-07-24',clientId:findId('Belu Bielewicz'),amount:800,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Belu Bielewicz - 20 Contenidos'});
+  payments.push({id:'ph_20250824_800_BeluB',date:'2025-08-24',clientId:findId('Belu Bielewicz'),amount:800,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Belu Bielewicz - 20 Contenidos'});
+  payments.push({id:'ph_20250924_800_BeluB',date:'2025-09-24',clientId:findId('Belu Bielewicz'),amount:800,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Belu Bielewicz - 20 Contenidos'});
+  payments.push({id:'ph_20251024_800_BeluB',date:'2025-10-24',clientId:findId('Belu Bielewicz'),amount:800,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Belu Bielewicz - 20 Contenidos'});
+  payments.push({id:'ph_20241120_300_Metier',date:'2024-11-20',clientId:findId('Metier Studio'),amount:300,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Metier Studio - 15 dias'});
+  payments.push({id:'ph_20241220_300_Metier',date:'2024-12-20',clientId:findId('Metier Studio'),amount:300,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Metier Studio - 15 dias'});
+  payments.push({id:'ph_20250102_600_Metier',date:'2025-01-02',clientId:findId('Metier Studio'),amount:600,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Metier Studio - 15 Contenido'});
+  payments.push({id:'ph_20250206_800_Metier',date:'2025-02-06',clientId:findId('Metier Studio'),amount:800,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Metier Studio - 20 Contenido'});
+  payments.push({id:'ph_20250306_800_Metier',date:'2025-03-06',clientId:findId('Metier Studio'),amount:800,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Metier Studio - 20 Contenido'});
+  payments.push({id:'ph_20250406_800_Metier',date:'2025-04-06',clientId:findId('Metier Studio'),amount:800,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Metier Studio - 20 Contenido'});
+  payments.push({id:'ph_20250507_1200_Metier',date:'2025-05-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20250607_800_Metier',date:'2025-06-07',clientId:findId('Metier Studio'),amount:800,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20250707_1200_Metier',date:'2025-07-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20250807_1200_Metier',date:'2025-08-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20250907_1200_Metier',date:'2025-09-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20250908_250_Metier',date:'2025-09-08',clientId:findId('Metier Studio'),amount:250,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'VSL - Metier'});
+  payments.push({id:'ph_20251007_1200_Metier',date:'2025-10-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20251107_1200_Metier',date:'2025-11-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20251205_1100_Metier',date:'2025-12-05',clientId:findId('Metier Studio'),amount:1100,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Produccion Metier'});
+  payments.push({id:'ph_20251207_1200_Metier',date:'2025-12-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20260107_1200_Metier',date:'2026-01-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20260207_1200_Metier',date:'2026-02-07',clientId:findId('Metier Studio'),amount:1200,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Metier Studio - 20 Contenido + anuncios'});
+  payments.push({id:'ph_20260307_1100_Metier',date:'2026-03-07',clientId:findId('Metier Studio'),amount:1100,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Produccion Metier'});
+  payments.push({id:'ph_20241219_1600_Edgar',date:'2024-12-19',clientId:findId('Edgar Yo Reparo'),amount:1600,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Edgar Yo Reparo'});
+  payments.push({id:'ph_20250220_1000_Edgar',date:'2025-02-20',clientId:findId('Edgar Yo Reparo'),amount:1000,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Edgar Yo Reparo - 30 Contenido'});
+  payments.push({id:'ph_20250320_500_Edgar',date:'2025-03-20',clientId:findId('Edgar Yo Reparo'),amount:500,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Edgar Yo Reparo - 30 Contenido'});
+  payments.push({id:'ph_20250212_1200_Ahilen',date:'2025-02-12',clientId:findId('Ahilen Esteve'),amount:1200,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Ahilen Esteve - 30 Contenido'});
+  payments.push({id:'ph_20250710_1200_Ahilen',date:'2025-07-10',clientId:findId('Ahilen Esteve'),amount:1200,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Ahilu Esteves - 30 piezas de contenido'});
+  payments.push({id:'ph_20250110_1200_JuanS',date:'2025-01-10',clientId:findId('Juan Suarez'),amount:1200,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Juan Suarez - 30 contenido'});
+  payments.push({id:'ph_20250227_1200_JuanS',date:'2025-02-27',clientId:findId('Juan Suarez'),amount:1200,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Juan Suarez - VSL + Landing'});
+  payments.push({id:'ph_20250428_1200_JuanS',date:'2025-04-28',clientId:findId('Juan Suarez'),amount:1200,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Juan Suarez - 30 contenidos'});
+  payments.push({id:'ph_20250514_195_JuanS',date:'2025-05-14',clientId:findId('Juan Suarez'),amount:195,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Juan Suarez - Edicion + copy 5 videos'});
+  payments.push({id:'ph_20250519_80_JuanS',date:'2025-05-19',clientId:findId('Juan Suarez'),amount:80,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Juan Suarez - 3 Piezas ADS + 1 video'});
+  payments.push({id:'ph_20250612_1200_JuanS',date:'2025-06-12',clientId:findId('Juan Suarez'),amount:1200,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Juan Suarez - 30 contenidos'});
+  payments.push({id:'ph_20250105_180_AgusN',date:'2025-01-05',clientId:findId('Agus Nievas'),amount:180,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'6 mails - Agus Nievas'});
+  payments.push({id:'ph_20250207_2115_AgusN',date:'2025-02-07',clientId:findId('Agus Nievas'),amount:2115,fees:0,method:'Transferencia USD',period:'Febrero_2025',desc:'Agus Nievas - Copywritter'});
+  payments.push({id:'ph_20250302_720_AgusN',date:'2025-03-02',clientId:findId('Agus Nievas'),amount:720,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Agus Nievas - Copywritter'});
+  payments.push({id:'ph_20250401_1875_AgusN',date:'2025-04-01',clientId:findId('Agus Nievas'),amount:1875,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Agus Nievas'});
+  payments.push({id:'ph_20250502_400_AgusN',date:'2025-05-02',clientId:findId('Agus Nievas'),amount:400,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Agus Nievas'});
+  payments.push({id:'ph_20250601_200_AgusN',date:'2025-06-01',clientId:findId('Agus Nievas'),amount:200,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Agus Nievas'});
+  payments.push({id:'ph_20250506_600_JulaA',date:'2025-05-06',clientId:findId('Jula Arquitectura'),amount:600,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Jula Arquitectura - 15 contenidos'});
+  payments.push({id:'ph_20250606_600_JulaA',date:'2025-06-06',clientId:findId('Jula Arquitectura'),amount:600,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Jula Arquitectura - 15 contenidos'});
+  payments.push({id:'ph_20250706_600_JulaA',date:'2025-07-06',clientId:findId('Jula Arquitectura'),amount:600,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Jula Arquitectura - 15 contenidos'});
+  payments.push({id:'ph_20250806_600_JulaA',date:'2025-08-06',clientId:findId('Jula Arquitectura'),amount:600,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Jula Arquitectura - 15 contenidos'});
+  payments.push({id:'ph_20250906_600_JulaA',date:'2025-09-06',clientId:findId('Jula Arquitectura'),amount:600,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Jula Arquitectura - 15 contenidos'});
+  payments.push({id:'ph_20250712_700_JuliC',date:'2025-07-12',clientId:findId('Juli Cotti'),amount:700,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Juli Cotti - 15 contenidos'});
+  payments.push({id:'ph_20250901_700_JuliC',date:'2025-09-01',clientId:findId('Juli Cotti'),amount:700,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Juli Cotti - 15 contenidos'});
+  payments.push({id:'ph_20251001_700_JuliC',date:'2025-10-01',clientId:findId('Juli Cotti'),amount:700,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Juli Cotti - 15 contenidos'});
+  payments.push({id:'ph_20250608_700_Taller',date:'2025-06-08',clientId:findId('Taller 215'),amount:700,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Taller 215 - 15 contenidos'});
+  payments.push({id:'ph_20251015_700_Taller',date:'2025-10-15',clientId:findId('Taller 215'),amount:700,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Taller 215 - 15 contenidos'});
+  payments.push({id:'ph_20251114_700_Taller',date:'2025-11-14',clientId:findId('Taller 215'),amount:700,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Taller 215 - 15 contenidos'});
+  payments.push({id:'ph_20260124_700_Taller',date:'2026-01-24',clientId:findId('Taller 215'),amount:700,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Taller 215 - 15 publicaciones'});
+  payments.push({id:'ph_20251006_750_Dakota',date:'2025-10-06',clientId:findId('Dakota Estudio'),amount:750,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Dakota Estudio - 15 contenidos'});
+  payments.push({id:'ph_20241205_600_Aracel',date:'2024-12-05',clientId:findId('Araceli Prudente'),amount:600,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Araceli Prudente - ADS'});
+  payments.push({id:'ph_20250101_600_Aracel',date:'2025-01-01',clientId:findId('Araceli Prudente'),amount:600,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Araceli Prudente - ADS'});
+  payments.push({id:'ph_20240810_600_JoseH',date:'2024-08-10',clientId:findId('Jose Hernandez'),amount:600,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'Jose Hernandez - Ads'});
+  payments.push({id:'ph_20241010_600_JoseH',date:'2024-10-10',clientId:findId('Jose Hernandez'),amount:600,fees:0,method:'Transferencia USD',period:'Octubre_2024',desc:'Jose Hernandez - Ads'});
+  payments.push({id:'ph_20241110_600_JoseH',date:'2024-11-10',clientId:findId('Jose Hernandez'),amount:600,fees:0,method:'Transferencia USD',period:'Noviembre_2024',desc:'Jose Hernandez - Ads'});
+  payments.push({id:'ph_20241208_600_JoseH',date:'2024-12-08',clientId:findId('Jose Hernandez'),amount:600,fees:0,method:'Transferencia USD',period:'Diciembre_2024',desc:'Jose Hernandez - Ads'});
+  payments.push({id:'ph_20250108_600_JoseH',date:'2025-01-08',clientId:findId('Jose Hernandez'),amount:600,fees:0,method:'Transferencia USD',period:'Enero_2025',desc:'Jose Hernandez - ADS'});
+  payments.push({id:'ph_20250418_1890_Langua',date:'2025-04-18',clientId:findId('Language Journeys'),amount:1890,fees:0,method:'Transferencia USD',period:'Abril_2025',desc:'Language Journeys - 15 contenidos x 3 meses'});
+  payments.push({id:'ph_20250522_90_Langua',date:'2025-05-22',clientId:findId('Language Journeys'),amount:90,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Language Journey - 3 Ads'});
+  payments.push({id:'ph_20250729_1890_Langua',date:'2025-07-29',clientId:findId('Language Journeys'),amount:1890,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Language Journeys'});
+  payments.push({id:'ph_20250913_175_Langua',date:'2025-09-13',clientId:findId('Language Journeys'),amount:175,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'2 Llamadas Ads - Language Journeys'});
+  payments.push({id:'ph_20251008_350_Langua',date:'2025-10-08',clientId:findId('Language Journeys'),amount:350,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mentoriship Ads - Language Journeys'});
+  payments.push({id:'ph_20251027_60_Langua',date:'2025-10-27',clientId:findId('Language Journeys'),amount:60,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Language Journey - 2 Ads'});
+  payments.push({id:'ph_20251029_1890_Langua',date:'2025-10-29',clientId:findId('Language Journeys'),amount:1890,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Language Journeys - 15 piezas x 3 meses'});
+  payments.push({id:'ph_20251108_410_Langua',date:'2025-11-08',clientId:findId('Language Journeys'),amount:410,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mentoriship Ads - Language Journeys'});
+  payments.push({id:'ph_20260126_2010_Langua',date:'2026-01-26',clientId:findId('Language Journeys'),amount:2010,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Language Journeys - 15 piezas x 3 meses'});
+  payments.push({id:'ph_20250825_2160_Compli',date:'2025-08-25',clientId:findId('Compliance Exitoso'),amount:2160,fees:0,method:'Transferencia USD',period:'Agosto_2025',desc:'Compliance Exitoso - 3 meses 15 contenidos'});
+  payments.push({id:'ph_20260112_2160_Compli',date:'2026-01-12',clientId:findId('Compliance Exitoso'),amount:2160,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Compliance Exitoso - 3 meses 15 contenidos'});
+  payments.push({id:'ph_20250713_1500_Aldana',date:'2025-07-13',clientId:findId('Aldana Bonifazi'),amount:1500,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Aldana Bonifazi - 30 contenidos + asesoria'});
+  payments.push({id:'ph_20250925_140_Aldana',date:'2025-09-25',clientId:findId('Aldana Bonifazi'),amount:140,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'ph_20251004_700_Aldana',date:'2025-10-04',clientId:findId('Aldana Bonifazi'),amount:700,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'ph_20251104_700_Aldana',date:'2025-11-04',clientId:findId('Aldana Bonifazi'),amount:700,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'ph_20251204_700_Aldana',date:'2025-12-04',clientId:findId('Aldana Bonifazi'),amount:700,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'ph_20260104_560_Aldana',date:'2026-01-04',clientId:findId('Aldana Bonifazi'),amount:560,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Aldana Bonifazi - 15 contenidos'});
+  payments.push({id:'ph_20260204_560_Aldana',date:'2026-02-04',clientId:findId('Aldana Bonifazi'),amount:560,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Aldana Bonifazi - 12 contenidos'});
+  payments.push({id:'ph_20260304_560_Aldana',date:'2026-03-04',clientId:findId('Aldana Bonifazi'),amount:560,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Aldana Bonifazi - 12 contenidos'});
+  payments.push({id:'ph_20251023_1800_Mateo',date:'2025-10-23',clientId:findId('Mateo Quaintenne'),amount:1800,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Mateo Quainteanne'});
+  payments.push({id:'ph_20251128_1800_Mateo',date:'2025-11-28',clientId:findId('Mateo Quaintenne'),amount:1800,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Mateo Quanteianne'});
+  payments.push({id:'ph_20251218_25_Mateo',date:'2025-12-18',clientId:findId('Mateo Quaintenne'),amount:25,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Edicion 2 videos Thank you page'});
+  payments.push({id:'ph_20251219_270_Mateo',date:'2025-12-19',clientId:findId('Mateo Quaintenne'),amount:270,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'27 clases Mateo Edicion'});
+  payments.push({id:'ph_20251230_1800_Mateo',date:'2025-12-30',clientId:findId('Mateo Quaintenne'),amount:1800,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Mateo Quanteianne'});
+  payments.push({id:'ph_20260119_250_Mateo',date:'2026-01-19',clientId:findId('Mateo Quaintenne'),amount:250,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'4 long form - Mateo Quainntenne'});
+  payments.push({id:'ph_20260127_1800_Mateo',date:'2026-01-27',clientId:findId('Mateo Quaintenne'),amount:1800,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Mateo Quanteianne'});
+  payments.push({id:'ph_20260215_75_Mateo',date:'2026-02-15',clientId:findId('Mateo Quaintenne'),amount:75,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'VSL - Mateo Quaintenne'});
+  payments.push({id:'ph_20260221_105_Mateo',date:'2026-02-21',clientId:findId('Mateo Quaintenne'),amount:105,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'3 ads de IA - Mateo Quaintenne'});
+  payments.push({id:'ph_20260222_105_Mateo',date:'2026-02-22',clientId:findId('Mateo Quaintenne'),amount:105,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'3 ads de creadoras - Mateo Quaintenne'});
+  payments.push({id:'ph_20260226_2340_Mateo',date:'2026-02-26',clientId:findId('Mateo Quaintenne'),amount:2340,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Mateo Quanteianne'});
+  payments.push({id:'ph_20251030_750_Lucia',date:'2025-10-30',clientId:findId('Lucia Armstrong'),amount:750,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Lucia Armstrong - 15 piezas'});
+  payments.push({id:'ph_20251228_750_Lucia',date:'2025-12-28',clientId:findId('Lucia Armstrong'),amount:750,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Lucia Armstrong - 15 piezas'});
+  payments.push({id:'ph_20260128_750_Lucia',date:'2026-01-28',clientId:findId('Lucia Armstrong'),amount:750,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Lucia Armstrong - 15 piezas'});
+  payments.push({id:'ph_20260227_750_Lucia',date:'2026-02-27',clientId:findId('Lucia Armstrong'),amount:750,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Lucia Armstrong - 15 piezas'});
+  payments.push({id:'ph_20251026_700_FlorH',date:'2025-10-26',clientId:findId('Flor Hermann'),amount:700,fees:0,method:'Transferencia USD',period:'Octubre_2025',desc:'Flor Hermann - 15 piezas de contenido'});
+  payments.push({id:'ph_20260113_700_FlorH',date:'2026-01-13',clientId:findId('Flor Hermann'),amount:700,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Flor Hermann - 15 piezas de contenido'});
+  payments.push({id:'ph_20260224_700_FlorH',date:'2026-02-24',clientId:findId('Flor Hermann'),amount:700,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Flor Hermann - 15 piezas de contenido'});
+  payments.push({id:'ph_20251111_750_Anabel',date:'2025-11-11',clientId:findId('Anabella Rabinovich'),amount:750,fees:0,method:'Transferencia USD',period:'Noviembre_2025',desc:'Anabella Rabinovich - 15 piezas'});
+  payments.push({id:'ph_20260103_750_Anabel',date:'2026-01-03',clientId:findId('Anabella Rabinovich'),amount:750,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Anabella Rabinovich - 15 piezas'});
+  payments.push({id:'ph_20251206_750_Marcon',date:'2025-12-06',clientId:findId('Marconi Silva Arquitectos'),amount:750,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Marconi Silva Arquitectos - 15 publicaciones'});
+  payments.push({id:'ph_20260129_750_Marcon',date:'2026-01-29',clientId:findId('Marconi Silva Arquitectos'),amount:750,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Marconi Silva Arquitectos - 15 publicaciones'});
+  payments.push({id:'ph_20260320_300_Marcon',date:'2026-03-20',clientId:findId('Marconi Silva Arquitectos'),amount:300,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Marconi Silva Arquitectos - 6 publicaciones'});
+  payments.push({id:'ph_20251211_750_Eugeni',date:'2025-12-11',clientId:findId('Eugenia Cats'),amount:750,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Eugenia Cats - 15 piezas de contenido'});
+  payments.push({id:'ph_20260109_450_Eugeni',date:'2026-01-09',clientId:findId('Eugenia Cats'),amount:450,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Ads - Eugenia Cats'});
+  payments.push({id:'ph_20260121_1000_Eugeni',date:'2026-01-21',clientId:findId('Eugenia Cats'),amount:1000,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Produccion 1 dia - Eugenia Cats'});
+  payments.push({id:'ph_20260130_750_Eugeni',date:'2026-01-30',clientId:findId('Eugenia Cats'),amount:750,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Eugenia Cats - 15 publicaciones'});
+  payments.push({id:'ph_20260228_750_Eugeni',date:'2026-02-28',clientId:findId('Eugenia Cats'),amount:750,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Eugenia Cats - 15 publicaciones'});
+  payments.push({id:'ph_20251202_300_DenDv',date:'2025-12-02',clientId:findId('Den Dvorkin'),amount:300,fees:0,method:'Transferencia USD',period:'Diciembre_2025',desc:'Ads - Den Dvorkin'});
+  payments.push({id:'ph_20260125_314_DenDv',date:'2026-01-25',clientId:findId('Den Dvorkin'),amount:314,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Ads - Den Dvorkin'});
+  payments.push({id:'ph_20260218_150_DenDv',date:'2026-02-18',clientId:findId('Den Dvorkin'),amount:150,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Edicion 10 videos - Den Dvorkin'});
+  payments.push({id:'ph_20260225_300_DenDv',date:'2026-02-25',clientId:findId('Den Dvorkin'),amount:300,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Ads - Den Dvorkin'});
+  payments.push({id:'ph_20260122_750_Hatch',date:'2026-01-22',clientId:findId('Hatch Arquitectura'),amount:750,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Hatch Arquitectura - 15 piezas'});
+  payments.push({id:'ph_20260313_750_Hatch',date:'2026-03-13',clientId:findId('Hatch Arquitectura'),amount:750,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Hatch Arquitectura - 15 piezas'});
+  payments.push({id:'ph_20260114_900_LaMar',date:'2026-01-14',clientId:findId('La Maria'),amount:900,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'La Maria - 20 piezas de contenido'});
+  payments.push({id:'ph_20260311_900_LaMar',date:'2026-03-11',clientId:findId('La Maria'),amount:900,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'La Maria - 20 piezas de contenido'});
+  payments.push({id:'ph_20260120_750_Build',date:'2026-01-20',clientId:findId('Build a Home'),amount:750,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'15 piezas - Build a Home'});
+  payments.push({id:'ph_20260210_2100_Modula',date:'2026-02-10',clientId:findId('Modula Estudio'),amount:2100,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Modula Estudio - 15 contenidos x 3 meses'});
+  payments.push({id:'ph_20260203_1050_MAArq',date:'2026-02-03',clientId:findId('MA Arquitectura'),amount:1050,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'MA Arquitectura - 15 piezas + anuncios'});
+  payments.push({id:'ph_20260223_750_Pasion',date:'2026-02-23',clientId:findId('Pasion Retail'),amount:750,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Passion Retail - 15 contenidos'});
+  payments.push({id:'ph_20260220_2270_Angiey',date:'2026-02-20',clientId:findId('Angieylu'),amount:2270,fees:0,method:'Transferencia USD',period:'Febrero_2026',desc:'Angie y Lu - 30 piezas + long form'});
+  payments.push({id:'ph_20260317_450_Angiey',date:'2026-03-17',clientId:findId('Angieylu'),amount:450,fees:0,method:'Transferencia USD',period:'Marzo_2026',desc:'Edicion 100 videos Angieylu'});
+  payments.push({id:'ph_20260116_550_Basaar',date:'2026-01-16',clientId:findId('Basaarq'),amount:550,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Landing Page - Basaarq'});
+  payments.push({id:'ph_20260131_400_Basaar',date:'2026-01-31',clientId:findId('Basaarq'),amount:400,fees:0,method:'Transferencia USD',period:'Enero_2026',desc:'Ads - Basaarq'});
+  payments.push({id:'ph_20240518_1200_FedeR',date:'2024-05-18',clientId:findId('Fede Raspo'),amount:1200,fees:0,method:'Transferencia USD',period:'Mayo_2024',desc:'Fede Raspo - Content + Setting'});
+  payments.push({id:'ph_20240628_1000_SebaB',date:'2024-06-28',clientId:findId('Seba Bronley'),amount:1000,fees:0,method:'Transferencia USD',period:'Junio_2024',desc:'Seba Bronley - 30 videos + Manychat'});
+  payments.push({id:'ph_20240507_400_Ciudad',date:'2024-05-07',clientId:findId('Ciudadanias Espanolas'),amount:400,fees:0,method:'Transferencia USD',period:'Mayo_2024',desc:'Ciudadanias Espanolas - Content'});
+  payments.push({id:'ph_20240611_400_Ciudad',date:'2024-06-11',clientId:findId('Ciudadanias Espanolas'),amount:400,fees:0,method:'Transferencia USD',period:'Junio_2024',desc:'Ciudadanias Espanolas - Content'});
+  payments.push({id:'ph_20240813_400_Ciudad',date:'2024-08-13',clientId:findId('Ciudadanias Espanolas'),amount:400,fees:0,method:'Transferencia USD',period:'Agosto_2024',desc:'Parte de Ciudadanias'});
+  payments.push({id:'ph_20240502_60_WolfT',date:'2024-05-02',clientId:findId('Wolf Trading'),amount:60,fees:0,method:'Transferencia USD',period:'Mayo_2024',desc:'Wolf Trading - Ads'});
+  payments.push({id:'ph_20240529_250_WolfT',date:'2024-05-29',clientId:findId('Wolf Trading'),amount:250,fees:0,method:'Transferencia USD',period:'Mayo_2024',desc:'Wolf Trading'});
+  payments.push({id:'ph_20250319_600_JuliH',date:'2025-03-19',clientId:findId('Juli Heredia'),amount:600,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Juli Heredia - 15 Contenido'});
+  payments.push({id:'ph_20250518_500_Belen',date:'2025-05-18',clientId:findId('Belen Biele'),amount:500,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Belen Biele - VSL + Landing Page'});
+  payments.push({id:'ph_20250512_50_SofiM',date:'2025-05-12',clientId:findId('Sofi Martinez'),amount:50,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Edicion 3 ads - Sofi Martinez Makeup'});
+  payments.push({id:'ph_20250530_1300_SofiM',date:'2025-05-30',clientId:findId('Sofi Martinez'),amount:1300,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Sofi Martinez Landing Page + Ads + Edicion VSL'});
+  payments.push({id:'ph_20250629_136_SofiM',date:'2025-06-29',clientId:findId('Sofi Martinez'),amount:136,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Sofi Martinez Ads'});
+  payments.push({id:'ph_20250314_350_Mateo',date:'2025-03-14',clientId:findId('Mateo Duhalde'),amount:350,fees:0,method:'Transferencia USD',period:'Marzo_2025',desc:'Masterclass Toti'});
+  payments.push({id:'ph_20250526_600_Mateo',date:'2025-05-26',clientId:findId('Mateo Duhalde'),amount:600,fees:0,method:'Transferencia USD',period:'Mayo_2025',desc:'Mateo Duhalde - Base Lanzamiento'});
+  payments.push({id:'ph_20250702_1500_Mateo',date:'2025-07-02',clientId:findId('Mateo Duhalde'),amount:1500,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Ads + diseno grafico - Bodysecrets'});
+  payments.push({id:'ph_20250719_517_Mateo',date:'2025-07-19',clientId:findId('Mateo Duhalde'),amount:517,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Mateo Duhalde'});
+  payments.push({id:'ph_20250609_1250_TomiM',date:'2025-06-09',clientId:findId('Tomi Mazza'),amount:1250,fees:0,method:'Transferencia USD',period:'Junio_2025',desc:'Tomi Mazza - Head of Content'});
+  payments.push({id:'ph_20250701_1520_TomiM',date:'2025-07-01',clientId:findId('Tomi Mazza'),amount:1520,fees:0,method:'Transferencia USD',period:'Julio_2025',desc:'Funnel + VSL Tomi Mazza'});
+  payments.push({id:'ph_20250917_900_TomiM',date:'2025-09-17',clientId:findId('Tomi Mazza'),amount:900,fees:0,method:'Transferencia USD',period:'Septiembre_2025',desc:'SharkMindset - 15 piezas'});
+
+  // Deduplicate payments by id
   const seen = new Set();
-  payments = payments.filter(p=>seen.has(p.id)?false:seen.add(p.id));
-
-  // Add historical projects
-  const existingPjIds = new Set(projects.map(p=>p.id));
-  const histProjects = [
-    {id:'pj_20240404_2024_400',nombre:'Brandon Lau - Historias',fecha:'2024-04-04',ingreso:400.0},
-    {id:'pj_20240423_2024_150',nombre:'Emi Boaglio - 15 guiones',fecha:'2024-04-23',ingreso:150.0},
-    {id:'pj_20240429_2024_750',nombre:'Maxi Robles - Content + Setting',fecha:'2024-04-29',ingreso:750.0},
-    {id:'pj_20240502_2024_60',nombre:'Wolf Trading - Ads',fecha:'2024-05-02',ingreso:60.0},
-    {id:'pj_20240507_2024_400',nombre:'Ciudadanias Españolas - Content',fecha:'2024-05-07',ingreso:400.0},
-    {id:'pj_20240511_2024_60',nombre:'Miguel Garzon - Retargeting',fecha:'2024-05-11',ingreso:60.0},
-    {id:'pj_20240517_2024_1500',nombre:'Gaby Lopez - Content + Setter + Oferta',fecha:'2024-05-17',ingreso:1500.0},
-    {id:'pj_20240518_2024_1200',nombre:'Fede Raspo - Content + Setting',fecha:'2024-05-18',ingreso:1200.0},
-    {id:'pj_20240520_2024_1470',nombre:'Caro Esteves Siri - Content - Setter - Oferta',fecha:'2024-05-20',ingreso:1470.0},
-    {id:'pj_20240528_2024_50',nombre:'Rona Suk - Edicion 5 videos',fecha:'2024-05-28',ingreso:50.0},
-    {id:'pj_20240529_2024_250',nombre:'Wolf Trading',fecha:'2024-05-29',ingreso:250.0},
-    {id:'pj_20240530_2024_100',nombre:'Emi Boaglio - 5 guiones',fecha:'2024-05-30',ingreso:100.0},
-    {id:'pj_20240531_2024_40',nombre:'Facu Montes de Oca - 4 miniaturas',fecha:'2024-05-31',ingreso:40.0},
-    {id:'pj_20240611_2024_400',nombre:'Ciudadanias Españolas - Content',fecha:'2024-06-11',ingreso:400.0},
-    {id:'pj_20240612_2024_804',nombre:'Maxi Robles - Finalizacion del mes',fecha:'2024-06-12',ingreso:804.0},
-    {id:'pj_20240614_2024_750',nombre:'Maxi Robles - mitad junio/julio',fecha:'2024-06-14',ingreso:750.0},
-    {id:'pj_20240625_2024_50',nombre:'Asesoria 1a1 Agos',fecha:'2024-06-25',ingreso:50.0},
-    {id:'pj_20240627_2024_300',nombre:'11 videos Paolo Rivadeira',fecha:'2024-06-27',ingreso:300.0},
-    {id:'pj_20240628_2024_1000',nombre:'Seba Bronley - 30 videos + Manychat',fecha:'2024-06-28',ingreso:1000.0},
-    {id:'pj_20240704_2024_1600',nombre:'Minntoring',fecha:'2024-07-04',ingreso:1600.0},
-    {id:'pj_20240705_2024_1500',nombre:'Gaby Lopez',fecha:'2024-07-05',ingreso:1500.0},
-    {id:'pj_20240710_2024_205',nombre:'Orange Trail',fecha:'2024-07-10',ingreso:205.0},
-    {id:'pj_20240713_2024_550',nombre:'finalizacion del mes anterior - Maxi',fecha:'2024-07-13',ingreso:550.0},
-    {id:'pj_20240714_2024_1500',nombre:'Caro Esteves Siri',fecha:'2024-07-14',ingreso:1500.0},
-    {id:'pj_20240801_2024_1300',nombre:'Maxi mes entero',fecha:'2024-08-01',ingreso:1300.0},
-    {id:'pj_20240804_2024_1600',nombre:'Minntoring',fecha:'2024-08-04',ingreso:1600.0},
-    {id:'pj_20240805_2024_1500',nombre:'Gaby Lopez',fecha:'2024-08-05',ingreso:1500.0},
-    {id:'pj_20240808_2024_2600',nombre:'3 meses de content x 15 dias + 3 mails x semana + coach de j',fecha:'2024-08-08',ingreso:2600.0},
-    {id:'pj_20240810_2024_600',nombre:'Jose Hernandez - Ads',fecha:'2024-08-10',ingreso:600.0},
-    {id:'pj_20240813_2024_400',nombre:'Parte de Ciudadanias',fecha:'2024-08-13',ingreso:400.0},
-    {id:'pj_20240814_2024_1000',nombre:'Caro Esteves Siri',fecha:'2024-08-14',ingreso:1000.0},
-    {id:'pj_20240904_2024_1600',nombre:'Minntoring',fecha:'2024-09-04',ingreso:1600.0},
-    {id:'pj_20240905_2024_500',nombre:'Gaby Lopez',fecha:'2024-09-05',ingreso:500.0},
-    {id:'pj_20240913_2024_1300',nombre:'Maxi mes entero',fecha:'2024-09-13',ingreso:1300.0},
-    {id:'pj_20240914_2024_1000',nombre:'Caro Esteves Siri',fecha:'2024-09-14',ingreso:1000.0},
-    {id:'pj_20240916_2024_1200',nombre:'Marketingconmaria',fecha:'2024-09-16',ingreso:1200.0},
-    {id:'pj_20240919_2024_1000',nombre:'Agustina Bovier',fecha:'2024-09-19',ingreso:1000.0},
-    {id:'pj_20240926_2024_400',nombre:'Wendy Mardigian - 10 guiones + 2 llamadas mensuales de coach',fecha:'2024-09-26',ingreso:400.0},
-    {id:'pj_20240927_2024_500',nombre:'Sofia List - 15 piezas de contenido mensuales',fecha:'2024-09-27',ingreso:500.0},
-    {id:'pj_20240930_2024_250',nombre:'Asdru Sanabria - medio mes de ads',fecha:'2024-09-30',ingreso:250.0},
-    {id:'pj_phist_20250106_400',nombre:'Wendy Mardigian - Asesoria 1a1 + 15 guiones',fecha:'2025-01-06',ingreso:400.0},
-    {id:'pj_phist_20250114_1000',nombre:'Caro Esteve Siri  - 30 Contenido',fecha:'2025-01-14',ingreso:1000.0},
-    {id:'pj_phist_20250118_500',nombre:'Coaching - Vanser Comunicaciones',fecha:'2025-01-18',ingreso:500.0},
-    {id:'pj_phist_20250125_500',nombre:'Asdru - ADS',fecha:'2025-01-25',ingreso:500.0},
-    {id:'pj_phist_20250208_75',nombre:'Anuncios Vicky',fecha:'2025-02-08',ingreso:75.0},
-    {id:'pj_phist_20250210_150',nombre:'Llamada - Golden Trading',fecha:'2025-02-10',ingreso:150.0},
-    {id:'pj_phist_20250211_500',nombre:'Coaching - Vanser Comunicaciones',fecha:'2025-02-11',ingreso:500.0},
-    {id:'pj_phist_20250311_150',nombre:'Diploma + 2 Flyers Evento Editable Mastery Insiders',fecha:'2025-03-11',ingreso:150.0},
-    {id:'pj_phist_20250314_350',nombre:'Masterclass Toti',fecha:'2025-03-14',ingreso:350.0},
-    {id:'pj_phist_20250317_200',nombre:'Diploma Editable + 2 Flyers Evento Editable Mastery Insiders',fecha:'2025-03-17',ingreso:200.0},
-    {id:'pj_phist_20250318_500',nombre:'Coaching - Vanser Comunicaciones (hasta el 5 de mayo)',fecha:'2025-03-18',ingreso:500.0},
-    {id:'pj_phist_20250319_600',nombre:'Juli Heredia - 15 Contenido',fecha:'2025-03-19',ingreso:600.0},
-    {id:'pj_phist_20250326_36',nombre:'Maggie - Edicion 3 videos',fecha:'2025-03-26',ingreso:36.0},
-    {id:'pj_phist_20250328_40',nombre:'Gavy - Edicion 2 videos',fecha:'2025-03-28',ingreso:40.0},
-    {id:'pj_phist_20250330_300',nombre:'Comisión LLC - Xovox',fecha:'2025-03-30',ingreso:300.0},
-    {id:'pj_phist_20250410_200',nombre:'D5 Render - Publicidad',fecha:'2025-04-10',ingreso:200.0},
-    {id:'pj_phist_20250417_171',nombre:'Publicidad Yanus',fecha:'2025-04-17',ingreso:171.0},
-    {id:'pj_phist_20250419_200',nombre:'Pagina Web - Vicky',fecha:'2025-04-19',ingreso:200.0},
-    {id:'pj_phist_20250425_250',nombre:'Tomi De Luca - Campaña de Dia del Padre',fecha:'2025-04-25',ingreso:250.0},
-    {id:'pj_phist_20250427_500',nombre:'Publicidad Belo',fecha:'2025-04-27',ingreso:500.0},
-    {id:'pj_phist_20250429_300',nombre:'Cerro Negro',fecha:'2025-04-29',ingreso:300.0},
-    {id:'pj_phist_20250512_50',nombre:'Edicion 3 ads - Sofi Martinez Makeup',fecha:'2025-05-12',ingreso:50.0},
-    {id:'pj_phist_20250518_500',nombre:'Belen Biele - VSL + Landing Page',fecha:'2025-05-18',ingreso:500.0},
-    {id:'pj_phist_20250521_300',nombre:'15 portadas Skool - Belu Biele',fecha:'2025-05-21',ingreso:300.0},
-    {id:'pj_phist_20250526_600',nombre:'Mateo Duhalde - Base Lanzamiento',fecha:'2025-05-26',ingreso:600.0},
-    {id:'pj_phist_20250527_500',nombre:'Publicidad Belo',fecha:'2025-05-27',ingreso:500.0},
-    {id:'pj_phist_20250530_1300',nombre:'Sofi Martinez Landing Page  + Ads + Edicion VSL',fecha:'2025-05-30',ingreso:1300.0},
-    {id:'pj_phist_20250609_1250',nombre:'Tomi Mazza -Head of Content',fecha:'2025-06-09',ingreso:1250.0},
-    {id:'pj_phist_20250614_250',nombre:'Tomi De Luca - Campaña de Dia del Padre',fecha:'2025-06-14',ingreso:250.0},
-    {id:'pj_phist_20250621_688',nombre:'Contenido UGC - Full Express',fecha:'2025-06-21',ingreso:688.0},
-    {id:'pj_phist_20250625_750',nombre:'5 long form',fecha:'2025-06-25',ingreso:750.0},
-    {id:'pj_phist_20250627_500',nombre:'Publicidad Belo',fecha:'2025-06-27',ingreso:500.0},
-    {id:'pj_phist_20250629_136',nombre:'Sofi Martinez Ads',fecha:'2025-06-29',ingreso:136.0},
-    {id:'pj_phist_20250701_1520',nombre:'Funnel + VSL Tomi Mazza',fecha:'2025-07-01',ingreso:1520.0},
-    {id:'pj_phist_20250702_1500',nombre:'Ads + diseño grafico - Bodysecrets',fecha:'2025-07-02',ingreso:1500.0},
-    {id:'pj_phist_20250710_1200',nombre:'Ahilu Esteves - 30 piezas de contenido',fecha:'2025-07-10',ingreso:1200.0},
-    {id:'pj_phist_20250719_517',nombre:'254 usd 338.850 pesos  Mateo Duhalde',fecha:'2025-07-19',ingreso:517.0},
-    {id:'pj_phist_20250726_150',nombre:'3 Testimonial Vicky',fecha:'2025-07-26',ingreso:150.0},
-    {id:'pj_phist_20250727_150',nombre:'1 Long form',fecha:'2025-07-27',ingreso:150.0},
-    {id:'pj_phist_20250730_500',nombre:'Belo',fecha:'2025-07-30',ingreso:500.0},
-    {id:'pj_phist_20250813_150',nombre:'Llamada 1a1 - The Room - Valeria Teri',fecha:'2025-08-13',ingreso:150.0},
-    {id:'pj_phist_20250820_250',nombre:'Testimonial Vicky (Flor Soding + level up + Vanina y Mariana',fecha:'2025-08-20',ingreso:250.0},
-    {id:'pj_phist_20250823_180',nombre:'10 Ads - Cherry',fecha:'2025-08-23',ingreso:180.0},
-    {id:'pj_phist_20250827_150',nombre:'Podcast - Estefi - Vicky Beccu',fecha:'2025-08-27',ingreso:150.0},
-    {id:'pj_phist_20250830_500',nombre:'Belo',fecha:'2025-08-30',ingreso:500.0},
-    {id:'pj_phist_20250904_218',nombre:'Lula- Interiorismo',fecha:'2025-09-04',ingreso:218.0},
-    {id:'pj_phist_20250910_150',nombre:'Llamada - Santi Amado',fecha:'2025-09-10',ingreso:150.0},
-    {id:'pj_phist_20250911_150',nombre:'Llamada - Alexis Osorio',fecha:'2025-09-11',ingreso:150.0},
-    {id:'pj_phist_20250912_100',nombre:'2 Historias - Gridstudio',fecha:'2025-09-12',ingreso:100.0},
-    {id:'pj_phist_20250917_900',nombre:'SharkMindset - 15 piezas',fecha:'2025-09-17',ingreso:900.0},
-    {id:'pj_phist_20250918_150',nombre:'Llamada - Nati DBS Language',fecha:'2025-09-18',ingreso:150.0},
-    {id:'pj_phist_20250919_150',nombre:'Llamada 1a1 - The Room - Flor Pannunzio',fecha:'2025-09-19',ingreso:150.0},
-    {id:'pj_phist_20250922_300',nombre:'2 Long Form Vicky',fecha:'2025-09-22',ingreso:300.0},
-    {id:'pj_phist_20250926_300',nombre:'VSL - Vicky',fecha:'2025-09-26',ingreso:300.0},
-    {id:'pj_phist_20250927_150',nombre:'VSL - Cherry',fecha:'2025-09-27',ingreso:150.0},
-    {id:'pj_phist_20251009_300',nombre:'Vittorio - ADS',fecha:'2025-10-09',ingreso:300.0},
-    {id:'pj_phist_20251013_1500',nombre:'Multicuenta',fecha:'2025-10-13',ingreso:1500.0},
-    {id:'pj_phist_20251020_1000',nombre:'Lanzamiento Vicky',fecha:'2025-10-20',ingreso:1000.0},
-    {id:'pj_phist_20251025_175',nombre:'Video AMC UGC',fecha:'2025-10-25',ingreso:175.0},
-    {id:'pj_phist_20251110_150',nombre:'Call 1a1 - Fran y Sebas',fecha:'2025-11-10',ingreso:150.0},
-    {id:'pj_phist_20251112_70',nombre:'7 hooks con IA - Vicky',fecha:'2025-11-12',ingreso:70.0},
-    {id:'pj_phist_20251116_300',nombre:'Sketchup . Reel + historia',fecha:'2025-11-16',ingreso:300.0},
-    {id:'pj_phist_20251118_40',nombre:'Modificacion 4 ads - Vicky',fecha:'2025-11-18',ingreso:40.0},
-    {id:'pj_phist_20251123_554',nombre:'Publicidad Grid Studio',fecha:'2025-11-23',ingreso:554.0},
-    {id:'pj_phist_20251124_100',nombre:'AMC Cortinas',fecha:'2025-11-24',ingreso:100.0},
-    {id:'pj_phist_20251125_240',nombre:'Ads Vicky',fecha:'2025-11-25',ingreso:240.0},
-    {id:'pj_phist_20251126_100',nombre:'Testimoniales (Paula Herrera + Lucia Uñates)',fecha:'2025-11-26',ingreso:100.0},
-    {id:'pj_phist_20251127_300',nombre:'Long form 2 Vicky',fecha:'2025-11-27',ingreso:300.0},
-    {id:'pj_phist_20251120_15',nombre:'',fecha:'2025-11-20',ingreso:15.0},
-    {id:'pj_phist_20251120_18',nombre:'',fecha:'2025-11-20',ingreso:18.0},
-    {id:'pj_phist_20251115_8',nombre:'',fecha:'2025-11-15',ingreso:8.0},
-    {id:'pj_phist_20251115_9',nombre:'',fecha:'2025-11-15',ingreso:9.0},
-    {id:'pj_phist_20251115_7',nombre:'',fecha:'2025-11-15',ingreso:7.0},
-    {id:'pj_phist_20251115_15',nombre:'',fecha:'2025-11-15',ingreso:15.0},
-    {id:'pj_phist_20251115_8_1',nombre:'',fecha:'2025-11-15',ingreso:8.0},
-    {id:'pj_phist_20251115_10',nombre:'',fecha:'2025-11-15',ingreso:10.0},
-    {id:'pj_phist_20251115_7_1',nombre:'',fecha:'2025-11-15',ingreso:7.0},
-    {id:'pj_phist_20251115_8_2',nombre:'',fecha:'2025-11-15',ingreso:8.0},
-    {id:'pj_phist_20251115_10_1',nombre:'',fecha:'2025-11-15',ingreso:10.0},
-    {id:'pj_phist_20251115_8_3',nombre:'',fecha:'2025-11-15',ingreso:8.0},
-    {id:'pj_phist_20251115_8_4',nombre:'',fecha:'2025-11-15',ingreso:8.0},
-    {id:'pj_phist_20251122_9',nombre:'',fecha:'2025-11-22',ingreso:9.0},
-    {id:'pj_phist_20251201_4000',nombre:'Sales Partner',fecha:'2025-12-01',ingreso:4000.0},
-    {id:'pj_phist_20251210_50',nombre:'Testimonial Vicky',fecha:'2025-12-10',ingreso:50.0},
-    {id:'pj_phist_20251218_25',nombre:'Edicion 2 videos Thank you page - Mateo',fecha:'2025-12-18',ingreso:25.0},
-    {id:'pj_phist_20251219_270',nombre:'27 clases Mateo Edicion',fecha:'2025-12-19',ingreso:270.0},
-    {id:'pj_phist_20251221_160',nombre:'Facebook - AGOS',fecha:'2025-12-21',ingreso:160.0},
-    {id:'pj_phist_20251222_600',nombre:'6 clases programa Vicky',fecha:'2025-12-22',ingreso:600.0},
-    {id:'pj_phist_20260111_75',nombre:'Edicion VSL - Mateo',fecha:'2026-01-11',ingreso:75.0},
-    {id:'pj_phist_20260118_325',nombre:'Branding - Virginia Cismondi 1/2',fecha:'2026-01-18',ingreso:325.0},
-    {id:'pj_phist_20260213_210',nombre:'6 Ads de Mateo Masterclass',fecha:'2026-02-13',ingreso:210.0},
-    {id:'pj_phist_20260214_105',nombre:'3 Ads de Mateo Masterclass',fecha:'2026-02-14',ingreso:105.0},
-    {id:'pj_phist_20260216_400',nombre:'Charla SAGOSA - Agos',fecha:'2026-02-16',ingreso:400.0},
-    {id:'pj_phist_20260217_450',nombre:'Grid Studio - 1 reel + 2 historias',fecha:'2026-02-17',ingreso:450.0},
-    {id:'pj_phist_20260219_250',nombre:'Edicion 10 videos - Mica Asesora de Imagen',fecha:'2026-02-19',ingreso:250.0},
-    {id:'pj_phist_20260305_273',nombre:'Charla Interior Design Experiencia - España',fecha:'2026-03-05',ingreso:273.0},
-    {id:'pj_phist_20260306_1200',nombre:'Benja Luquez - Asesoria 1a1',fecha:'2026-03-06',ingreso:1200.0},
-    {id:'pj_phist_20260309_175',nombre:'Clase Capacitacion Colegio de Arquitectos San Luis',fecha:'2026-03-09',ingreso:175.0},
-    {id:'pj_phist_20260331_323',nombre:'Vainilla Digital',fecha:'2026-03-31',ingreso:323.0},
-  ];
-  histProjects.forEach(p=>{
-    if(!existingPjIds.has(p.id))
-      projects.push({...p,clientId:null,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  payments = payments.filter(p => {
+    if(seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
   });
 
   saveData();
-  renderSidebar(); renderDashboard(); renderPagos();
-  if(typeof renderProyectos==='function') renderProyectos();
-  alert('Historial importado correctamente.');
+  alert('✓ Historial importado: ' + payments.length + ' pagos de ' + clients.length + ' clientes');
+  renderAll();
 }
-
 function seedProjects() {
   if(projects.length) return;
   projects.push({id:'pj_hist_20251013_0',nombre:'Multicuenta (Vicky Becci)',fecha:'2025-10-13',clientId:null,ingreso:1500,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
@@ -1319,7 +1274,8 @@ function seedProjects() {
   projects.push({id:'pj_hist_20251126_12',nombre:'Testimoniales Paula + Lucia',fecha:'2025-11-26',clientId:null,ingreso:100,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
   projects.push({id:'pj_hist_20251127_13',nombre:'Long Form 2 Vicky',fecha:'2025-11-27',clientId:null,ingreso:300,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
   projects.push({id:'pj_hist_20251128_14',nombre:'Lanzamiento Mateo Quanteianne',fecha:'2025-11-28',clientId:null,ingreso:1800,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
-  projects.push({id:'pj_hist_20251201_15',nombre:'Sales Partner',fecha:'2025-12-01',clientId:null,ingreso:4000,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
+  projects.push(
+);
   projects.push({id:'pj_hist_20251217_16',nombre:'10 ads sin IA - Vicky',fecha:'2025-12-17',clientId:null,ingreso:250,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
   projects.push({id:'pj_hist_20251218_17',nombre:'Edicion Thank You Page - Mateo',fecha:'2025-12-18',clientId:null,ingreso:25,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
   projects.push({id:'pj_hist_20251219_18',nombre:'27 clases Mateo Edicion',fecha:'2025-12-19',clientId:null,ingreso:270,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
