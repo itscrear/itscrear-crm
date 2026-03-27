@@ -407,9 +407,9 @@ body.light .inactive-row td { opacity:.5; }
         <table>
           <thead><tr>
             <th>Cliente</th><th>Ciclo</th><th>Piezas</th>
-            <th class="r">CC</th><th class="r">CC Neto</th>
+            <th class="r">MRR Teórico</th><th class="r">Cobrado Real</th>
             <th class="r">Costo Op.</th><th class="r">Margen $</th>
-            <th class="r">Margen %</th><th class="r">MRR</th>
+            <th class="r">Margen %</th>
             <th class="r">LTV</th><th class="r">Cobro</th>
           </tr></thead>
           <tbody id="dash-tbody"></tbody>
@@ -1680,12 +1680,22 @@ function renderDashboard(){
   renderFixedIncomes();
   const active=clients.filter(c=>c.active);
   let totCC=0,totNet=0,totCost=0,totMarg=0,cobrados=0,pendientes=0;
+  let totRealCobrado=0;
+  const curPeriod=`${curMonth}_${curYear}`;
   active.forEach(c=>{
     if(!clientActiveInMonth(c,curMonth,curYear)) return;
     const r=calcClient(c,curMonth,curYear);
-    totCC+=r.cc; totNet+=r.netCC;totCost+=r.costoTotal;totMarg+=r.margenAmt;
+    const clientPays=payments.filter(p=>p.clientId===c.id&&p.period===curPeriod);
+    const clientReal=clientPays.reduce((a,p)=>a+(p.amount-(p.fees||0)),0);
+    // If real payments exist, use them as teorico too (historical data)
+    const clientTeorico = clientReal>0 ? clientReal : r.netCC;
+    totCC+=r.cc; totNet+=clientTeorico; totCost+=r.costoTotal; totMarg+=clientTeorico-r.costoTotal;
+    totRealCobrado+=clientReal;
     if(getMonthData(c,curMonth,curYear).cobro==='paid')cobrados++;else pendientes++;
   });
+  // Add fixed incomes + projects to real cobrado
+  totRealCobrado += fixedIncomes.filter(fi=>fi.active!==false).reduce((a,fi)=>a+(fi.amount||0),0);
+  totRealCobrado += projects.filter(p=>{const f=p.fecha||p.date||'';if(!f)return false;const d=new Date(f+'T12:00:00');return d.getFullYear()===curYear&&MONTHS[d.getMonth()]===curMonth;}).reduce((a,p)=>a+(p.ingreso||0),0);
   // Add fixed incomes (recurrent, not clients)
   const activeFixedIncomes = fixedIncomes.filter(fi=>fi.active!==false);
   const fiTotal = activeFixedIncomes.reduce((a,fi)=>a+(fi.amount||0),0);
@@ -1761,12 +1771,14 @@ function renderDashboard(){
     </div>`;
   }).join('');
 
+  const realMargAmt = totRealCobrado - totCost;
+  const realMargPct = totRealCobrado>0?(realMargAmt/totRealCobrado*100):0;
   document.getElementById('dash-kpis').innerHTML=`
-    <div class="kpi"><div class="kpi-l">CC (Bruto)</div><div class="kpi-v">${$f(totCC)}</div><div class="kpi-s">antes de fees</div></div>
-    <div class="kpi hi"><div class="kpi-l">CC Neto (MRR)</div><div class="kpi-v">${$f(totNet)}</div><div class="kpi-s">${label}</div></div>
+    <div class="kpi"><div class="kpi-l">MRR Teórico</div><div class="kpi-v">${$f(totNet)}</div><div class="kpi-s">${totRealCobrado>0?"basado en pagos reales":"precio configurado"}</div></div>
+    <div class="kpi hi"><div class="kpi-l">Cobrado Real</div><div class="kpi-v">${$f(totRealCobrado)}</div><div class="kpi-s">${label}</div></div>
     <div class="kpi"><div class="kpi-l">Costo Operativo</div><div class="kpi-v">${$f(totCost)}</div><div class="kpi-s">editores + fijos</div></div>
-    <div class="kpi grn"><div class="kpi-l">Margen $</div><div class="kpi-v">${$f(totMarg)}</div><div class="kpi-s">margen ${pct(mg)}</div></div>
-    <div class="kpi"><div class="kpi-l">Margen %</div><div class="kpi-v" style="color:${margColor(mg)}">${pct(mg)}</div><div class="kpi-s">${cobrados}/${active.length} cobrados</div></div>
+    <div class="kpi grn"><div class="kpi-l">Margen Real $</div><div class="kpi-v">${$f(realMargAmt)}</div><div class="kpi-s">sobre cobrado real</div></div>
+    <div class="kpi"><div class="kpi-l">Margen Real %</div><div class="kpi-v" style="color:${margColor(realMargPct)}">${pct(realMargPct)}</div><div class="kpi-s">${cobrados}/${active.length} cobrados</div></div>
     <div class="kpi"><div class="kpi-l">LTV Total</div><div class="kpi-v" style="color:var(--ylw)">${$f(totalLTV)}</div><div class="kpi-s">${payments.length} pagos registrados</div></div>
     <div class="kpi red"><div class="kpi-l">Pendientes</div><div class="kpi-v">${pendientes}</div><div class="kpi-s">de ${active.length} clientes</div></div>`;
 
@@ -1781,16 +1793,20 @@ function renderDashboard(){
     const cycle = c.cycleDay===1 ? `1→31/${SHORT_M[mIdx]}` : `${fs(csDate)}→${fs(ceDate)}`;
     const piezas=c.contenidoQty||(c.services.ads&&!c.services.contenido?'—':0);
     const prepayBadge=c.prepay3?`<span class="tag tag-wht" style="margin-left:4px">3m</span>`:'';
+    const clientPays=payments.filter(p=>p.clientId===c.id&&p.period===curPeriod);
+    const clientReal=clientPays.reduce((a,p)=>a+(p.amount-(p.fees||0)),0);
+    // If real payments exist, teorico = real (historical data)
+    const clientTeorico = clientReal>0 ? clientReal : r.netCC;
+    const hasPays = clientReal>0;
     return`<tr ondblclick="openClient('${c.id}')" style="cursor:pointer">
       <td><span class="bold">${c.name}</span>${prepayBadge}</td>
       <td><span style="font-size:10px;font-family:var(--mono);color:var(--t3)">día ${c.cycleDay}</span></td>
       <td class="mono" style="color:var(--t2)">${piezas}</td>
-      <td class="r mono">${$f(r.cc)}</td>
-      <td class="r mono">${$f(r.netCC)}</td>
+      <td class="r mono" style="color:var(--t2)">${$f(clientTeorico)}</td>
+      <td class="r mono" style="color:${hasPays?'var(--grn)':'var(--t3)'}">${hasPays?$f(clientReal):'—'}</td>
       <td class="r mono">${$f(r.costoTotal)}</td>
       <td class="r mono" style="color:${margColor(r.margenPct)}">${$f(r.margenAmt)}</td>
       <td class="r"><span class="mpill ${margClass(r.margenPct)}">${pct(r.margenPct)}</span></td>
-      <td class="r mono">${$f(r.netCC)}</td>
       <td class="r"><span class="ltv-val">${$f(ltv.total)}</span><br><span class="ltv-months">${ltv.months}m</span></td>
       <td class="r"><button class="pbadge ${d.cobro}" onclick="cycleCobro('${c.id}',event)">${cobroLbl(d.cobro)}</button></td>
     </tr>`;
