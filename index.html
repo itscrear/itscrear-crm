@@ -902,7 +902,6 @@ function importHistorial() {
   addInactiveClient('Vicky Becci',5,900,20,{"contenido": true});
   addInactiveClient('Gofurgo',15,1300,30,{"contenido": true});
   addInactiveClient('Maxi Robles',13,1300,30,{"contenido": true, "ads": true});
-  addInactiveClient('Metier Studio',7,1200,20,{"contenido": true, "ads": true});
   addInactiveClient('Marketingconmaria',16,1400,30,{"contenido": true});
   addInactiveClient('Cherry Mediavilla',17,1200,30,{"contenido": true});
   addInactiveClient('Caro Esteves Siri',14,1000,30,{"contenido": true});
@@ -928,6 +927,7 @@ function importHistorial() {
   addInactiveClient('Sofi Martinez',30,700,15,{"contenido": true});
   addInactiveClient('Mateo Duhalde',1,600,0,{"contenido": true});
   addInactiveClient('Tomi Mazza',1,1200,15,{"contenido": true});
+  addInactiveClient('Marconi Silva Arquitectos',1,750,15,{"contenido": true});
 
   // NOW define findId — all clients are in memory
   const findId = name => clients.find(cl=>cl.name===name)?.id || null;
@@ -1253,9 +1253,10 @@ function importHistorial() {
     return true;
   });
 
+  reconcileCobroFromPayments();
   saveData();
   alert('✓ Historial importado: ' + payments.length + ' pagos de ' + clients.length + ' clientes');
-  renderAll();
+  renderDashboard(); renderPagos(); renderSidebar();
 }
 function seedProjects() {
   if(projects.length) return;
@@ -1274,8 +1275,6 @@ function seedProjects() {
   projects.push({id:'pj_hist_20251126_12',nombre:'Testimoniales Paula + Lucia',fecha:'2025-11-26',clientId:null,ingreso:100,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
   projects.push({id:'pj_hist_20251127_13',nombre:'Long Form 2 Vicky',fecha:'2025-11-27',clientId:null,ingreso:300,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
   projects.push({id:'pj_hist_20251128_14',nombre:'Lanzamiento Mateo Quanteianne',fecha:'2025-11-28',clientId:null,ingreso:1800,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
-  projects.push(
-);
   projects.push({id:'pj_hist_20251217_16',nombre:'10 ads sin IA - Vicky',fecha:'2025-12-17',clientId:null,ingreso:250,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
   projects.push({id:'pj_hist_20251218_17',nombre:'Edicion Thank You Page - Mateo',fecha:'2025-12-18',clientId:null,ingreso:25,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
   projects.push({id:'pj_hist_20251219_18',nombre:'27 clases Mateo Edicion',fecha:'2025-12-19',clientId:null,ingreso:270,cEditores:0,cDiseno:0,cCopy:0,cOtros:0});
