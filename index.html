@@ -1635,7 +1635,7 @@ function renderDashboard(){
   document.getElementById('dash-mlabel').textContent=label;
   renderFixedIncomes();
   const active=clients.filter(c=>c.active);
-  let totCC=0,totNet=0,totCost=0,totMarg=0,cobrados=0,pendientes=0;
+  let totCC=0,totNet=0,totCost=0,totMarg=0,cobrados=0,parciales=0,pendientes=0;
   let totRealCobrado=0;
   const curPeriod=`${curMonth}_${curYear}`;
   active.forEach(c=>{
@@ -1647,7 +1647,8 @@ function renderDashboard(){
     const clientTeorico = clientReal>0 ? clientReal : r.netCC;
     totCC+=r.cc; totNet+=clientTeorico; totCost+=r.costoTotal; totMarg+=clientTeorico-r.costoTotal;
     totRealCobrado+=clientReal;
-    if(getMonthData(c,curMonth,curYear).cobro==='paid')cobrados++;else pendientes++;
+    const cobroState=getMonthData(c,curMonth,curYear).cobro;
+    if(cobroState==='paid')cobrados++;else if(cobroState==='partial')parciales++;else pendientes++;
   });
   // Add fixed incomes + projects to real cobrado
   totRealCobrado += fixedIncomes.filter(fi=>fi.active!==false).reduce((a,fi)=>a+(fi.amount||0),0);
@@ -1734,9 +1735,9 @@ function renderDashboard(){
     <div class="kpi hi"><div class="kpi-l">Cobrado Real</div><div class="kpi-v">${$f(totRealCobrado)}</div><div class="kpi-s">${label}</div></div>
     <div class="kpi"><div class="kpi-l">Costo Operativo</div><div class="kpi-v">${$f(totCost)}</div><div class="kpi-s">editores + fijos</div></div>
     <div class="kpi grn"><div class="kpi-l">Margen Real $</div><div class="kpi-v">${$f(realMargAmt)}</div><div class="kpi-s">sobre cobrado real</div></div>
-    <div class="kpi"><div class="kpi-l">Margen Real %</div><div class="kpi-v" style="color:${margColor(realMargPct)}">${pct(realMargPct)}</div><div class="kpi-s">${cobrados}/${active.length} cobrados</div></div>
+    <div class="kpi"><div class="kpi-l">Margen Real %</div><div class="kpi-v" style="color:${margColor(realMargPct)}">${pct(realMargPct)}</div><div class="kpi-s">${cobrados} cobrados · ${parciales} parciales</div></div>
     <div class="kpi"><div class="kpi-l">LTV Total</div><div class="kpi-v" style="color:var(--ylw)">${$f(totalLTV)}</div><div class="kpi-s">${payments.length} pagos registrados</div></div>
-    <div class="kpi red"><div class="kpi-l">Pendientes</div><div class="kpi-v">${pendientes}</div><div class="kpi-s">de ${active.length} clientes</div></div>`;
+    <div class="kpi red"><div class="kpi-l">Pendientes</div><div class="kpi-v">${pendientes}</div><div class="kpi-s">${parciales} parciales · ${active.length} total</div></div>`;
 
   document.getElementById('dash-tbody').innerHTML=active.filter(c=>clientActiveInMonth(c,curMonth,curYear)).map(c=>{
     const r=calcClient(c,curMonth,curYear);
@@ -1768,15 +1769,14 @@ function renderDashboard(){
     </tr>`;
   }).join('');
 
-  // Totals row
+  // Totals row — columnas: Cliente | Ciclo | Piezas | MRR Teórico | Cobrado Real | Costo Op. | Margen $ | Margen % | LTV | Cobro
   const totalRows = `<tr style="background:var(--s2);font-weight:700;border-top:2px solid var(--b2)">
     <td>TOTAL (${active.length} clientes)</td><td></td><td></td>
-    <td class="r mono">${$f(totCC)}</td>
     <td class="r mono">${$f(totNet)}</td>
+    <td class="r mono" style="color:var(--grn)">${$f(totRealCobrado)}</td>
     <td class="r mono">${$f(totCost)}</td>
     <td class="r mono" style="color:${margColor(mg)}">${$f(totMarg)}</td>
     <td class="r"><span class="mpill ${margClass(mg)}">${pct(mg)}</span></td>
-    <td class="r mono">${$f(totNet)}</td>
     <td class="r"><span class="ltv-val">${$f(totalLTV)}</span></td>
     <td></td>
   </tr>`;
@@ -2145,10 +2145,12 @@ function renderClient(id){
 function renderComparativa(){
   document.getElementById('comp-year-label').textContent=curYear;
   document.getElementById('comp-year-label2').textContent=curYear;
-  const buildTable=(tableId,valFn,label)=>{
+  // totalsFn opcional: si se pasa, se usa para calcular la fila Total en vez de sumar valFn
+  const buildTable=(tableId,valFn,label,totalsFn)=>{
     const t=document.getElementById(tableId);
     const header=`<thead><tr><th>${label}</th>${MONTHS.map(m=>`<th style="text-align:right">${SHORT_M[MONTHS.indexOf(m)]}</th>`).join('')}<th style="text-align:right">Prom</th></tr></thead>`;
-    const rows=clients.filter(c=>c.active).map(c=>{
+    const activeClients=clients.filter(c=>c.active);
+    const rows=activeClients.map(c=>{
       const vals=MONTHS.map(m=>valFn(c,m));
       const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
       return`<tr><td class="bold" style="min-width:140px">${c.name}</td>${vals.map(v=>`<td style="text-align:right">${
@@ -2157,11 +2159,18 @@ function renderComparativa(){
         typeof avg==='number'&&avg<=100&&avg>=0?`<span class="mpill ${margClass(avg)}">${pct(avg)}</span>`:$f(avg)
       }</td></tr>`;
     }).join('');
-    const totals=MONTHS.map(m=>clients.filter(c=>c.active).reduce((a,c)=>a+valFn(c,m),0));
+    const totals=MONTHS.map(m=>totalsFn ? totalsFn(m) : activeClients.reduce((a,c)=>a+valFn(c,m),0));
     const totAvg=totals.reduce((a,b)=>a+b,0)/totals.length;
-    t.innerHTML=header+`<tbody>${rows}<tr style="background:var(--s2)"><td class="bold" style="color:var(--red2)">Total</td>${totals.map(v=>`<td style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--red2)">${$f(v)}</td>`).join('')}<td style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--red2)">${$f(totAvg)}</td></tr></tbody>`;
+    const fmtTot=v=>typeof v==='number'&&v<=100&&v>=0?`<span class="mpill ${margClass(v)}">${pct(v)}</span>`:`<span style="font-family:var(--mono);font-size:11px;color:var(--red2)">${$f(v)}</span>`;
+    t.innerHTML=header+`<tbody>${rows}<tr style="background:var(--s2)"><td class="bold" style="color:var(--red2)">Total</td>${totals.map(v=>`<td style="text-align:right">${fmtTot(v)}</td>`).join('')}<td style="text-align:right">${fmtTot(totAvg)}</td></tr></tbody>`;
   };
-  buildTable('comp-table',(c,m)=>calcClient(c,m,curYear).margenPct,'Cliente');
+  // Tabla Margen %: la fila Total usa margenAmt/netCC real, no suma de porcentajes
+  buildTable('comp-table',(c,m)=>calcClient(c,m,curYear).margenPct,'Cliente',m=>{
+    const activeClients=clients.filter(c=>c.active);
+    const totRev =activeClients.reduce((a,c)=>a+calcClient(c,m,curYear).netCC,0);
+    const totMarg=activeClients.reduce((a,c)=>a+calcClient(c,m,curYear).margenAmt,0);
+    return totRev>0?totMarg/totRev*100:0;
+  });
   buildTable('comp-table-mrr',(c,m)=>calcClient(c,m,curYear).netCC,'Cliente');
 }
 
@@ -2365,7 +2374,7 @@ function renderProyectos() {
     const cl = clients.find(x=>x.id===p.clientId);
     const costoTotal = (p.cEditores||0)+(p.cDiseno||0)+(p.cCopy||0)+(p.cOtros||0);
     const margenAmt  = (p.ingreso||0) - costoTotal;
-    const margenPct  = (p.ingreso||0)>0?(margenAmt/(p.ingreso||1)*100):100;
+    const margenPct  = (p.ingreso||0)>0?(margenAmt/p.ingreso*100):0;
     const d = new Date(p._fecha+'T12:00:00');
     const periodo = `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
     return`<tr>
@@ -2741,7 +2750,7 @@ function showIndicator(msg, color) {
 }
 
 async function saveData() {
-  const data = { clients, payments, editors, fixedSalaries, savedAt: new Date().toISOString() };
+  const data = { clients, payments, editors, fixedSalaries, projects, fixedIncomes, savedAt: new Date().toISOString() };
   // Always save to localStorage as backup
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
   // Save to Supabase
@@ -2781,6 +2790,8 @@ async function loadData() {
         if(d.payments)      payments      = d.payments;
         if(d.editors)       editors       = d.editors;
         if(d.fixedSalaries) fixedSalaries = d.fixedSalaries;
+        if(d.projects)      projects      = d.projects;
+        if(d.fixedIncomes)  fixedIncomes  = d.fixedIncomes;
         console.log('✓ Datos cargados desde Supabase —', d.savedAt);
         return true;
       }
