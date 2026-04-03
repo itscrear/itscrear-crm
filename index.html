@@ -1749,14 +1749,17 @@ function renderDashboard(){
   // Costos, cobro state y MRR de clientes activos filtrados por mes
   activeFiltered.forEach(c=>{
     const r=calcClient(c,curMonth,curYear);
+    const md=getMonthData(c,curMonth,curYear);
     const clientPays=payments.filter(p=>p.clientId===c.id&&p.period===curPeriod);
     const clientReal=clientPays.reduce((a,p)=>a+((p.amount||0)-(p.fees||0)),0);
     const clientTeorico=clientReal>0?clientReal:r.netCC;
+    // Usar costo manual si fue definido, sino el calculado
+    const costoEfectivo = md.costoManual != null ? md.costoManual : r.costoTotal;
     totCC+=r.cc; totNet+=clientTeorico;
     // Si hay overhead histórico NO sumar costos por cliente (overhead ya los incluye todos)
-    if(!overhead){ totCost+=r.costoTotal; totMarg+=clientTeorico-r.costoTotal; }
+    if(!overhead){ totCost+=costoEfectivo; totMarg+=clientTeorico-costoEfectivo; }
     else { totMarg+=clientTeorico; }
-    const cobroState=getMonthData(c,curMonth,curYear).cobro;
+    const cobroState=md.cobro;
     if(cobroState==='paid')cobrados++;else if(cobroState==='partial')parciales++;else pendientes++;
   });
   // Sumar pagos de clientes inactivos/históricos al MRR Teórico
@@ -1881,14 +1884,18 @@ function renderDashboard(){
     // If real payments exist, teorico = real (historical data)
     const clientTeorico = clientReal>0 ? clientReal : r.netCC;
     const hasPays = clientReal>0;
+    // Costo manual override (si fue editado a mano) o costo calculado
+    const costoManualVal = d.costoManual != null ? d.costoManual : r.costoTotal;
+    const margenManual = clientTeorico - costoManualVal;
+    const margenManualPct = clientTeorico>0 ? margenManual/clientTeorico*100 : 0;
     return`<tr ondblclick="openClient('${c.id}')" style="cursor:pointer">
       <td><span class="bold">${c.name}</span>${prepayBadge}</td>
       <td><span style="font-size:10px;font-family:var(--mono);color:var(--t3)">día ${c.cycleDay}</span></td>
       <td class="mono" style="color:var(--t2)">${piezas}</td>
       <td class="r mono" style="color:var(--t2);cursor:pointer" title="Click para editar MRR" onclick="editCobradoReal('${c.id}','${curPeriod}',${clientTeorico},true)">${$f(clientTeorico)} <span style="font-size:9px;opacity:.4">✎</span></td>
       <td class="r mono" style="color:${hasPays?'var(--grn)':'var(--t3)'};cursor:pointer" title="Click para editar cobrado real" onclick="editCobradoReal('${c.id}','${curPeriod}',${clientReal},false)">${hasPays?$f(clientReal):'—'} <span style="font-size:9px;opacity:.4">✎</span></td>
-      <td class="r mono">${$f(r.costoTotal)}</td>
-      <td class="r mono" style="color:${margColor(r.margenPct)}">${$f(r.margenAmt)}</td>
+      <td class="r mono" style="cursor:pointer" title="Click para editar costo operativo" onclick="editCostoCliente('${c.id}','${curPeriod}',${costoManualVal})">${$f(costoManualVal)}${d.costoManual!=null?'<span style="font-size:9px;opacity:.5;margin-left:2px">✎</span>':'<span style="font-size:9px;opacity:.3;margin-left:2px">✎</span>'}</td>
+      <td class="r mono" style="color:${margColor(margenManualPct)}">${$f(margenManual)}</td>
       <td class="r"><span class="mpill ${margClass(r.margenPct)}">${pct(r.margenPct)}</span></td>
       <td class="r"><span class="ltv-val">${$f(ltv.total)}</span><br><span class="ltv-months">${ltv.months}m</span></td>
       <td class="r"><button class="pbadge ${d.cobro}" onclick="cycleCobro('${c.id}',event)">${cobroLbl(d.cobro)}</button></td>
@@ -1901,9 +1908,11 @@ function renderDashboard(){
     const cpays=payments.filter(p=>p.clientId===c.id&&p.period===curPeriod);
     const creal=cpays.reduce((a,p)=>a+((p.amount||0)-(p.fees||0)),0);
     const rt=calcClient(c,curMonth,curYear);
+    const mdt=getMonthData(c,curMonth,curYear);
+    const costoEf = mdt.costoManual != null ? mdt.costoManual : rt.costoTotal;
     tblNet+=creal>0?creal:rt.netCC;
     tblCobrado+=creal;
-    if(!overhead) tblCost+=rt.costoTotal;
+    if(!overhead) tblCost+=costoEf;
   });
   const tblCostDisplay = overhead || tblCost;
   const tblMarg=tblNet-tblCostDisplay;
@@ -2116,6 +2125,25 @@ function addFixedSalary(){
   fixedSalaries[key]={lbl:lbl.trim(),salary:sal,basis:1};
   saveData();
   renderTeam();
+}
+
+function editCostoCliente(clientId, period, currentVal){
+  const c = clients.find(x=>x.id===clientId);
+  if(!c) return;
+  const newStr = prompt(`Costo operativo de ${c.name} — ${period.replace('_',' ')}:\n(actual: $${currentVal}\nDejá vacío para volver al costo calculado automáticamente)`, currentVal||'');
+  if(newStr===null) return;
+  const trimmed = String(newStr).trim();
+  const [mn,yr] = period.split('_');
+  const md = getMonthData(c, mn, parseInt(yr));
+  if(trimmed==='' || trimmed==='-'){
+    // Borrar override → vuelve al costo calculado
+    delete md.costoManual;
+  } else {
+    const amount = parseFloat(trimmed.replace(/[,$\s]/g,''));
+    if(isNaN(amount)||amount<0){ alert('Valor inválido'); return; }
+    md.costoManual = amount;
+  }
+  saveData(); renderDashboard();
 }
 
 function editCobradoReal(clientId, period, currentVal, isTeorico){
