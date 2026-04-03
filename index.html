@@ -1739,7 +1739,7 @@ function renderDashboard(){
   let totCC=0,totNet=0,totCost=0,totMarg=0,cobrados=0,parciales=0,pendientes=0;
   const curPeriod=`${curMonth}_${curYear}`;
 
-  // Overhead histórico — calculado ANTES del loop para no sumar costos por cliente encima
+  // Overhead histórico — ANTES del loop para no sumar costos por cliente encima
   const overhead = (monthlyOverhead.find(o=>o.period===curPeriod)||{}).amount||0;
 
   // Cobrado real = TODOS los pagos del período (activos + inactivos históricos)
@@ -1753,7 +1753,7 @@ function renderDashboard(){
     const clientReal=clientPays.reduce((a,p)=>a+((p.amount||0)-(p.fees||0)),0);
     const clientTeorico=clientReal>0?clientReal:r.netCC;
     totCC+=r.cc; totNet+=clientTeorico;
-    // Si hay overhead histórico, NO sumar costos por cliente (el overhead ya los incluye todos)
+    // Si hay overhead histórico NO sumar costos por cliente (overhead ya los incluye todos)
     if(!overhead){ totCost+=r.costoTotal; totMarg+=clientTeorico-r.costoTotal; }
     else { totMarg+=clientTeorico; }
     const cobroState=getMonthData(c,curMonth,curYear).cobro;
@@ -1764,7 +1764,7 @@ function renderDashboard(){
   const inactiveRevenue=allPeriodPays.filter(p=>!activeIds.has(p.clientId))
     .reduce((a,p)=>a+((p.amount||0)-(p.fees||0)),0);
   totCC+=inactiveRevenue; totNet+=inactiveRevenue; totMarg+=inactiveRevenue;
-  // Sumar overhead histórico al costo total (reemplaza costos por cliente en meses históricos)
+  // Overhead reemplaza costos por cliente en meses históricos
   totCost += overhead;
   totMarg -= overhead;
   // Add fixed incomes + projects to real cobrado (filtered by startDate)
@@ -1903,13 +1903,24 @@ function renderDashboard(){
     const rt=calcClient(c,curMonth,curYear);
     tblNet+=creal>0?creal:rt.netCC;
     tblCobrado+=creal;
-    // Si hay overhead histórico no sumar costos por cliente (overhead ya los cubre)
     if(!overhead) tblCost+=rt.costoTotal;
   });
-  // Para meses históricos, usar overhead como costo total de la tabla
   const tblCostDisplay = overhead || tblCost;
   const tblMarg=tblNet-tblCostDisplay;
   const tblMg=tblNet>0?tblMarg/tblNet*100:0;
+
+  // Totals row — columnas: Cliente | Ciclo | Piezas | MRR Teórico | Cobrado Real | Costo Op. | Margen $ | Margen % | LTV | Cobro
+  const totalRows = `<tr style="background:var(--s2);font-weight:700;border-top:2px solid var(--b2)">
+    <td>TOTAL (${tableClients.length} clientes)</td><td></td><td></td>
+    <td class="r mono">${$f(tblNet)}</td>
+    <td class="r mono" style="color:var(--grn)">${$f(tblCobrado)}</td>
+    <td class="r mono">${$f(tblCostDisplay)}</td>
+    <td class="r mono" style="color:${margColor(tblMg)}">${$f(tblMarg)}</td>
+    <td class="r"><span class="mpill ${margClass(tblMg)}">${pct(tblMg)}</span></td>
+    <td class="r"><span class="ltv-val">${$f(totalLTV)}</span></td>
+    <td></td>
+  </tr>`;
+  document.getElementById('dash-tbody').innerHTML += totalRows;
 
   // Proyectos del mes + pagos sin cliente (Growing Content histórico, etc.)
   const nullClientPays=allPeriodPays.filter(p=>!p.clientId);
@@ -1918,45 +1929,8 @@ function renderDashboard(){
     ...monthProjects.map(p=>({id:p.id,nombre:p.nombre||p.name||'—',ingreso:p.ingreso||0,type:'project'})),
     ...nullClientPays.map(p=>({id:p.id,nombre:p.desc||'Ingreso',ingreso:p.amount-(p.fees||0),type:'payment'}))
   ];
-  const totalProjAll=allProjItems.reduce((a,x)=>a+x.ingreso,0);
-
-  // Totals rows — subtotal clientes + proyectos/otros + gran total
-  const grandCobrado = tblCobrado + totalProjAll;
-  const grandNet = tblNet + totalProjAll;
-  const grandMarg = grandNet - tblCostDisplay;
-  const grandMg = grandNet>0?grandMarg/grandNet*100:0;
-  let totalRows = `<tr style="background:var(--s2);font-weight:600;border-top:2px solid var(--b2);opacity:.85">
-    <td style="font-size:11px">Subtotal clientes (${tableClients.length})</td><td></td><td></td>
-    <td class="r mono" style="font-size:12px">${$f(tblNet)}</td>
-    <td class="r mono" style="color:var(--grn);font-size:12px">${$f(tblCobrado)}</td>
-    <td class="r mono" style="font-size:12px">${$f(tblCostDisplay)}</td>
-    <td class="r mono" style="color:${margColor(tblMg)};font-size:12px">${$f(tblMarg)}</td>
-    <td class="r"><span class="mpill ${margClass(tblMg)}">${pct(tblMg)}</span></td>
-    <td class="r"><span class="ltv-val">${$f(totalLTV)}</span></td>
-    <td></td>
-  </tr>`;
-  if(totalProjAll>0){
-    totalRows += `<tr style="background:var(--s2);font-weight:600;opacity:.85">
-      <td style="font-size:11px">Proyectos / Otros</td><td></td><td></td>
-      <td class="r mono" style="font-size:12px">${$f(totalProjAll)}</td>
-      <td class="r mono" style="color:var(--grn);font-size:12px">${$f(totalProjAll)}</td>
-      <td class="r mono" style="font-size:12px">—</td>
-      <td class="r mono" style="font-size:12px">—</td>
-      <td></td><td></td><td></td>
-    </tr>`;
-  }
-  totalRows += `<tr style="background:var(--s3,#1a2035);font-weight:700;border-top:2px solid var(--acc)">
-    <td>TOTAL</td><td></td><td></td>
-    <td class="r mono">${$f(grandNet)}</td>
-    <td class="r mono" style="color:var(--grn)">${$f(grandCobrado)}</td>
-    <td class="r mono">${$f(tblCostDisplay)}</td>
-    <td class="r mono" style="color:${margColor(grandMg)}">${$f(grandMarg)}</td>
-    <td class="r"><span class="mpill ${margClass(grandMg)}">${pct(grandMg)}</span></td>
-    <td></td><td></td>
-  </tr>`;
-  document.getElementById('dash-tbody').innerHTML += totalRows;
-
   if(allProjItems.length){
+    const totalProjAll=allProjItems.reduce((a,x)=>a+x.ingreso,0);
     projCard.style.display='block';
     document.getElementById('dash-projects-total').textContent=`Total: ${$f(totalProjAll)}`;
     document.getElementById('dash-projects-tbody').innerHTML=allProjItems.map(item=>`
@@ -3026,7 +3000,7 @@ async function loadData() {
         if(d.projects)      projects      = d.projects;
         if(d.fixedIncomes)     fixedIncomes     = d.fixedIncomes;
         if(d.monthlyOverhead)  monthlyOverhead  = d.monthlyOverhead;
-        // Siempre sincronizar localStorage con lo que vino de Supabase
+        // Sincronizar localStorage con Supabase para evitar datos rancios
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
         console.log('✓ Datos cargados desde Supabase —', d.savedAt);
         return true;
