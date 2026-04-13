@@ -720,8 +720,13 @@ body.light .inactive-row td { opacity:.5; }
       <!-- Annual table -->
       <div class="card">
         <div class="card-head">
-          <span class="card-title">Profit First · <span id="pf-year-label" style="color:var(--red2)"></span></span>
-          <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">click en celda → editar mes</span>
+          <span class="card-title">Profit First</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button onclick="pfYear--;renderProfitFirst()" style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:4px 10px;color:var(--t2);font-family:var(--mono);font-size:13px;font-weight:700;cursor:pointer;">←</button>
+            <span id="pf-year-label" style="font-family:var(--mono);font-size:14px;font-weight:900;min-width:44px;text-align:center;color:var(--red2)"></span>
+            <button onclick="pfYear++;renderProfitFirst()" style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:4px 10px;color:var(--t2);font-family:var(--mono);font-size:13px;font-weight:700;cursor:pointer;">→</button>
+            <span style="font-size:10px;color:var(--t3);font-family:var(--mono);margin-left:6px">click en celda → editar mes</span>
+          </div>
         </div>
         <div class="pf-wrap">
           <table class="pf-table" id="pf-table"></table>
@@ -944,6 +949,7 @@ let fixedIncomes = []; // {id, name, amount, method, active}
 let monthlyOverhead = []; // {period:'Enero_2025', amount:1731} — historical operational costs
 let pfTargets = { profit_pct:5, owners_pay_pct:50, tax_pct:15, opex_pct:30 };
 let pfMonthly  = {}; // key: `${year}_${monthIndex}` (1-12), value: {real_revenue, profit_pct, owners_pay_pct, tax_pct, opex_pct}
+let pfYear = 2026;
 let _pfEditYear = 2026, _pfEditMonth = 1;
 
 function makeClient(name, cycleDay, qty, mrr, svcs, notes, startDate) {
@@ -3269,7 +3275,7 @@ function calcRealRevenue(year, mi) {
 }
 
 function renderProfitFirst() {
-  const year = curYear;
+  const year = pfYear;
   document.getElementById('pf-year-label').textContent = year;
 
   // Populate target inputs
