@@ -734,8 +734,11 @@ body.light .inactive-row td { opacity:.5; }
       </div>
       <!-- Evolución mensual -->
       <div class="card" id="pf-evo-card">
-        <div class="card-head"><span class="card-title">Evolución Mensual · <span id="pf-evo-year" style="color:var(--red2)"></span></span></div>
-        <div style="overflow-x:auto"><table id="pf-evo-table"></table></div>
+        <div class="card-head">
+          <span class="card-title">Evolución % · <span id="pf-evo-year" style="color:var(--red2)"></span></span>
+          <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">línea punteada = objetivo</span>
+        </div>
+        <div style="padding:16px;position:relative;height:280px"><canvas id="pf-chart"></canvas></div>
       </div>
     </div>
 
@@ -3360,53 +3363,101 @@ function renderProfitFirst() {
   html += '</tbody>';
   document.getElementById('pf-table').innerHTML = html;
 
-  // ── EVOLUTION TABLE ──
+  // ── EVOLUTION CHART ──
   document.getElementById('pf-evo-year').textContent = year;
-  const cats = [
-    { rk:'profit_real',     tpct:pfTargets.profit_pct,     lbl:'Profit',       hib:true  },
-    { rk:'owners_pay_real', tpct:pfTargets.owners_pay_pct, lbl:"Owner's Pay",  hib:true  },
-    { rk:'tax_real',        tpct:pfTargets.tax_pct,        lbl:'Tax',          hib:true  },
-    { rk:'opex_real',       tpct:pfTargets.opex_pct,       lbl:'Op. Expenses', hib:false },
+
+  const evoCats = [
+    { rk:'profit_real',     tpct:pfTargets.profit_pct,     lbl:'Profit',       color:'#4ade80' },
+    { rk:'owners_pay_real', tpct:pfTargets.owners_pay_pct, lbl:"Owner's Pay",  color:'#60a5fa' },
+    { rk:'tax_real',        tpct:pfTargets.tax_pct,        lbl:'Tax',          color:'#fbbf24' },
+    { rk:'opex_real',       tpct:pfTargets.opex_pct,       lbl:'Op. Expenses', color:'#fb923c' },
   ];
 
-  let evo = '<thead><tr>';
-  evo += '<th style="text-align:left;padding:7px 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);font-family:var(--mono);border-bottom:1px solid var(--b1);background:var(--s2);white-space:nowrap">Mes</th>';
-  evo += '<th style="text-align:right;padding:7px 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);font-family:var(--mono);border-bottom:1px solid var(--b1);background:var(--s2);white-space:nowrap">Revenue</th>';
-  cats.forEach(c => {
-    evo += `<th colspan="2" style="text-align:center;padding:7px 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--t3);font-family:var(--mono);border-bottom:1px solid var(--b1);background:var(--s2);white-space:nowrap">${c.lbl} <span style="color:var(--t4)">(obj ${c.tpct}%)</span></th>`;
-  });
-  evo += '</tr></thead><tbody>';
+  // Build per-month real % data (null if no data entered)
+  const evoData = evoCats.map(cat => ({
+    ...cat,
+    points: Array.from({length:12}, (_,i) => {
+      const mi  = i + 1;
+      const md  = getPFMonthData(year, mi);
+      const rev = md.real_revenue != null ? md.real_revenue : calcRealRevenue(year, mi);
+      const amt = md[cat.rk];
+      return (amt != null && rev > 0) ? Math.round(amt / rev * 100) : null;
+    })
+  }));
 
-  for (let mi = 1; mi <= 12; mi++) {
-    const md      = getPFMonthData(year, mi);
-    const autoRev = calcRealRevenue(year, mi);
-    const realRev = md.real_revenue != null ? md.real_revenue : autoRev;
-    evo += `<tr><td style="padding:8px 12px;font-size:12px;font-weight:700;border-bottom:1px solid var(--b1);white-space:nowrap">${SHORT_M[mi-1]}</td>`;
-    evo += `<td style="padding:8px 12px;font-size:12px;font-family:var(--mono);text-align:right;border-bottom:1px solid var(--b1)">${$f(realRev)}</td>`;
-    cats.forEach(cat => {
-      const realAmt = md[cat.rk];
-      const hasData = realAmt != null;
-      const teorico = Math.round(realRev * cat.tpct / 100);
-      let dot = 'neu';
-      if (hasData) dot = cat.hib ? (realAmt >= teorico ? 'grn' : 'red') : (realAmt <= teorico ? 'grn' : 'ylw');
-      const col = dot==='grn'?'var(--grn)':dot==='red'?'var(--red2)':dot==='ylw'?'var(--ylw)':'var(--t3)';
-      const realPct = (hasData && realRev > 0) ? Math.round(realAmt / realRev * 100) : null;
-      evo += `<td style="padding:8px 12px;font-size:12px;font-family:var(--mono);text-align:right;border-bottom:1px solid var(--b1);color:${hasData?col:'var(--t4)'}">
-        ${hasData ? $f(realAmt) : '—'}</td>`;
-      evo += `<td style="padding:8px 12px;border-bottom:1px solid var(--b1);text-align:right">`;
-      if (hasData) {
-        const pill = dot==='grn'?'hi':dot==='red'?'lo':'md';
-        evo += `<span class="mpill ${pill}" style="font-size:10px">${realPct}%</span>`;
-        evo += `<span style="font-size:9px;color:var(--t3);font-family:var(--mono);margin-left:3px">/ ${cat.tpct}%</span>`;
-      } else {
-        evo += `<span style="color:var(--t4);font-family:var(--mono);font-size:11px">—</span>`;
-      }
-      evo += '</td>';
+  const isDark   = !document.body.classList.contains('light');
+  const gridCol  = isDark ? 'rgba(255,255,255,.05)' : 'rgba(0,0,0,.06)';
+  const tickCol  = isDark ? '#444' : '#bbb';
+  const tooltipBg= isDark ? '#111' : '#fff';
+
+  // Real data datasets
+  const datasets = evoData.map(cat => ({
+    label: cat.lbl,
+    data: cat.points,
+    borderColor: cat.color,
+    backgroundColor: cat.color + '22',
+    tension: 0.35,
+    pointRadius: cat.points.map(v => v !== null ? 4 : 0),
+    pointBackgroundColor: cat.color,
+    spanGaps: false,
+    borderWidth: 2,
+  }));
+
+  // Target reference lines (dashed)
+  evoData.forEach(cat => {
+    datasets.push({
+      label: cat.lbl + ' obj',
+      data: Array(12).fill(cat.tpct),
+      borderColor: cat.color,
+      borderDash: [5, 4],
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0,
+      fill: false,
     });
-    evo += '</tr>';
-  }
-  evo += '</tbody>';
-  document.getElementById('pf-evo-table').innerHTML = evo;
+  });
+
+  if (window._pfChart) window._pfChart.destroy();
+  const ctx = document.getElementById('pf-chart')?.getContext('2d');
+  if (!ctx) return;
+  window._pfChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: SHORT_M, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: isDark ? '#777' : '#888',
+            font: { size: 11, family: 'JetBrains Mono' },
+            filter: item => !item.text.includes(' obj'), // hide target lines from legend
+          }
+        },
+        tooltip: {
+          backgroundColor: tooltipBg,
+          titleColor: isDark ? '#fff' : '#000',
+          bodyColor: isDark ? '#888' : '#555',
+          borderColor: isDark ? '#2a2a2a' : '#e0e0e0',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => {
+              if (ctx.dataset.label.includes(' obj')) return null;
+              const v = ctx.parsed.y;
+              return v !== null ? ` ${ctx.dataset.label}: ${v}%` : null;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: gridCol }, ticks: { color: tickCol, font: { size: 10, family: 'JetBrains Mono' } } },
+        y: {
+          grid: { color: gridCol },
+          ticks: { color: tickCol, font: { size: 10, family: 'JetBrains Mono' }, callback: v => v + '%' },
+          min: 0
+        }
+      }
+    }
+  });
 }
 
 function openPFModal(year, mi) {
