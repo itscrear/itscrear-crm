@@ -829,25 +829,38 @@ body.light .inactive-row td { opacity:.5; }
 
 <!-- MODAL PROFIT FIRST -->
 <div class="overlay" id="ov-pf">
-  <div class="modal" style="width:460px">
+  <div class="modal" style="width:480px">
     <div class="mclose" onclick="closeModal('ov-pf')">✕</div>
     <div class="modal-title" id="pf-modal-title">Profit First</div>
     <div class="frow">
       <div class="fg" style="grid-column:span 2">
-        <label>Real Revenue ($)</label>
-        <input class="fi" id="pfm-revenue" type="number" min="0" placeholder="0" oninput="updatePFModalSum()" />
+        <label>Real Revenue ($) <span id="pfm-rev-hint" style="color:var(--t3);text-transform:none;letter-spacing:0;font-weight:400"></span></label>
+        <input class="fi" id="pfm-revenue" type="number" min="0" placeholder="0" oninput="updatePFModalHints()" />
       </div>
     </div>
-    <div class="msec">Distribución real (%)</div>
+    <div class="msec">Cuánto separaste realmente ($)</div>
+    <div style="font-size:10px;font-family:var(--mono);color:var(--t3);margin-bottom:10px;">Ingresá el monto real que transferiste a cada cuenta.</div>
     <div class="frow">
-      <div class="fg"><label>Profit (%)</label><input class="fi" id="pfm-profit" type="number" min="0" max="100" step="0.5" placeholder="5" oninput="updatePFModalSum()" /></div>
-      <div class="fg"><label>Owner's Pay (%)</label><input class="fi" id="pfm-owners" type="number" min="0" max="100" step="0.5" placeholder="50" oninput="updatePFModalSum()" /></div>
+      <div class="fg">
+        <label>Profit ($) <span id="pfm-profit-hint" style="color:var(--grn);text-transform:none;letter-spacing:0;font-weight:600"></span></label>
+        <input class="fi" id="pfm-profit" type="number" min="0" step="1" placeholder="0" oninput="updatePFModalHints()" />
+      </div>
+      <div class="fg">
+        <label>Owner's Pay ($) <span id="pfm-owners-hint" style="color:var(--grn);text-transform:none;letter-spacing:0;font-weight:600"></span></label>
+        <input class="fi" id="pfm-owners" type="number" min="0" step="1" placeholder="0" oninput="updatePFModalHints()" />
+      </div>
     </div>
     <div class="frow">
-      <div class="fg"><label>Tax (%)</label><input class="fi" id="pfm-tax" type="number" min="0" max="100" step="0.5" placeholder="15" oninput="updatePFModalSum()" /></div>
-      <div class="fg"><label>Op. Expenses (%)</label><input class="fi" id="pfm-opex" type="number" min="0" max="100" step="0.5" placeholder="30" oninput="updatePFModalSum()" /></div>
+      <div class="fg">
+        <label>Tax ($) <span id="pfm-tax-hint" style="color:var(--grn);text-transform:none;letter-spacing:0;font-weight:600"></span></label>
+        <input class="fi" id="pfm-tax" type="number" min="0" step="1" placeholder="0" oninput="updatePFModalHints()" />
+      </div>
+      <div class="fg">
+        <label>Op. Expenses ($) <span id="pfm-opex-hint" style="color:var(--grn);text-transform:none;letter-spacing:0;font-weight:600"></span></label>
+        <input class="fi" id="pfm-opex" type="number" min="0" step="1" placeholder="0" oninput="updatePFModalHints()" />
+      </div>
     </div>
-    <div id="pf-modal-sum" style="font-size:11px;font-family:var(--mono);color:var(--t3);margin-bottom:4px;text-align:right;"></div>
+    <div id="pf-modal-sum" style="font-size:11px;font-family:var(--mono);color:var(--t3);margin-bottom:4px;text-align:right;padding:6px 0;border-top:1px solid var(--b1);"></div>
     <div class="mactions">
       <button class="btn btn-g" onclick="closeModal('ov-pf')">Cancelar</button>
       <button class="btn btn-p" onclick="savePFModal()">Guardar</button>
@@ -948,7 +961,7 @@ let projects = [];
 let fixedIncomes = []; // {id, name, amount, method, active}
 let monthlyOverhead = []; // {period:'Enero_2025', amount:1731} — historical operational costs
 let pfTargets = { profit_pct:5, owners_pay_pct:50, tax_pct:15, opex_pct:30 };
-let pfMonthly  = {}; // key: `${year}_${monthIndex}` (1-12), value: {real_revenue, profit_pct, owners_pay_pct, tax_pct, opex_pct}
+let pfMonthly  = {}; // key: `${year}_${mi}` (mi=1-12), value: {real_revenue, profit_real, owners_pay_real, tax_real, opex_real}
 let pfYear = 2026;
 let _pfEditYear = 2026, _pfEditMonth = 1;
 
@@ -3278,18 +3291,18 @@ function renderProfitFirst() {
   const year = pfYear;
   document.getElementById('pf-year-label').textContent = year;
 
-  // Populate target inputs
   document.getElementById('pft-profit').value  = pfTargets.profit_pct;
   document.getElementById('pft-owners').value  = pfTargets.owners_pay_pct;
   document.getElementById('pft-tax').value     = pfTargets.tax_pct;
   document.getElementById('pft-opex').value    = pfTargets.opex_pct;
 
+  // rows: key, label, real_key (field in pfMonthly), target_pct, higher_is_better
   const rows = [
-    { key:'revenue',   label:'Real Revenue',  pct_key:null,              target:null,                           hib:null  },
-    { key:'profit',    label:'Profit',         pct_key:'profit_pct',      target:pfTargets.profit_pct,           hib:true  },
-    { key:'owners',    label:"Owner's Pay",    pct_key:'owners_pay_pct',  target:pfTargets.owners_pay_pct,       hib:true  },
-    { key:'tax',       label:'Tax',            pct_key:'tax_pct',         target:pfTargets.tax_pct,              hib:true  },
-    { key:'opex',      label:'Op. Expenses',   pct_key:'opex_pct',        target:pfTargets.opex_pct,             hib:false },
+    { key:'revenue',  label:'Real Revenue',  rk:null,              tpct:null,                      hib:null  },
+    { key:'profit',   label:'Profit',         rk:'profit_real',    tpct:pfTargets.profit_pct,      hib:true  },
+    { key:'owners',   label:"Owner's Pay",    rk:'owners_pay_real',tpct:pfTargets.owners_pay_pct,  hib:true  },
+    { key:'tax',      label:'Tax',            rk:'tax_real',       tpct:pfTargets.tax_pct,         hib:true  },
+    { key:'opex',     label:'Op. Expenses',   rk:'opex_real',      tpct:pfTargets.opex_pct,        hib:false },
   ];
 
   let html = '<thead><tr><th class="pf-row-header">Categoría</th>';
@@ -3298,7 +3311,7 @@ function renderProfitFirst() {
 
   rows.forEach(row => {
     html += `<tr><td class="pf-row-label">${row.label}`;
-    if (row.target !== null) html += `<br><span style="font-size:9px;color:var(--t3)">obj: ${row.target}%</span>`;
+    if (row.tpct !== null) html += `<br><span style="font-size:9px;color:var(--t3)">obj: ${row.tpct}%</span>`;
     html += '</td>';
 
     for (let mi = 1; mi <= 12; mi++) {
@@ -3313,22 +3326,24 @@ function renderProfitFirst() {
         html += `<td onclick="openPFModal(${year},${mi})"><div class="pf-cell">
           <span class="pf-amt">${$f(realRev)}</span>${tag}</div></td>`;
       } else {
-        const realPct = md[row.pct_key] != null ? md[row.pct_key] : 0;
-        const amt     = realRev * realPct / 100;
+        const teorico  = Math.round(realRev * row.tpct / 100);
+        const realAmt  = md[row.rk] != null ? md[row.rk] : null;
+        const hasData  = realAmt !== null;
+
         let dot = 'neu';
-        if (realPct > 0) {
-          if (row.hib)  dot = realPct >= row.target ? 'grn' : 'red';
-          else          dot = realPct <= row.target ? 'grn' : 'ylw';
+        if (hasData) {
+          if (row.hib) dot = realAmt >= teorico ? 'grn' : 'red';
+          else         dot = realAmt <= teorico ? 'grn' : 'ylw';
         }
-        const amtHtml = realPct > 0
-          ? `<span style="color:${dot==='red'?'var(--red2)':dot==='grn'?'var(--grn)':dot==='ylw'?'var(--ylw)':'var(--t2)'}">${$f(amt)}</span>`
-          : `<span style="color:var(--t4)">—</span>`;
+        const realColor = dot==='red'?'var(--red2)':dot==='grn'?'var(--grn)':dot==='ylw'?'var(--ylw)':'var(--t2)';
+
         html += `<td onclick="openPFModal(${year},${mi})"><div class="pf-cell">
-          <span class="pf-amt">${amtHtml}</span>
+          <span class="pf-amt" style="color:${hasData?realColor:'var(--t4)'}">
+            ${hasData ? $f(realAmt) : '—'}
+          </span>
           <div class="pf-pcts">
             <div class="pf-dot ${dot}"></div>
-            <span class="pf-real-pct" style="color:${realPct>0?'var(--t1)':'var(--t3)'}">${realPct>0?realPct+'%':'—'}</span>
-            <span class="pf-obj-pct">/ ${row.target}%</span>
+            <span class="pf-obj-pct">obj ${$f(teorico)}</span>
           </div></div></td>`;
       }
     }
@@ -3344,38 +3359,61 @@ function openPFModal(year, mi) {
   _pfEditMonth = mi;
   const md      = getPFMonthData(year, mi);
   const autoRev = calcRealRevenue(year, mi);
+  const rev     = md.real_revenue != null ? md.real_revenue : autoRev;
+
   document.getElementById('pf-modal-title').textContent = `Profit First — ${MONTHS[mi-1]} ${year}`;
-  document.getElementById('pfm-revenue').value = md.real_revenue != null ? md.real_revenue : autoRev;
-  document.getElementById('pfm-profit').value  = md.profit_pct      != null ? md.profit_pct      : pfTargets.profit_pct;
-  document.getElementById('pfm-owners').value  = md.owners_pay_pct  != null ? md.owners_pay_pct  : pfTargets.owners_pay_pct;
-  document.getElementById('pfm-tax').value     = md.tax_pct         != null ? md.tax_pct         : pfTargets.tax_pct;
-  document.getElementById('pfm-opex').value    = md.opex_pct        != null ? md.opex_pct        : pfTargets.opex_pct;
-  updatePFModalSum();
+  document.getElementById('pfm-rev-hint').textContent   = `(auto: ${$f(autoRev)})`;
+  document.getElementById('pfm-revenue').value = rev;
+  document.getElementById('pfm-profit').value  = md.profit_real      != null ? md.profit_real      : '';
+  document.getElementById('pfm-owners').value  = md.owners_pay_real  != null ? md.owners_pay_real  : '';
+  document.getElementById('pfm-tax').value     = md.tax_real         != null ? md.tax_real         : '';
+  document.getElementById('pfm-opex').value    = md.opex_real        != null ? md.opex_real        : '';
+  updatePFModalHints();
   document.getElementById('ov-pf').classList.add('on');
 }
 
-function updatePFModalSum() {
-  const p = parseFloat(document.getElementById('pfm-profit').value)  || 0;
-  const o = parseFloat(document.getElementById('pfm-owners').value)  || 0;
-  const t = parseFloat(document.getElementById('pfm-tax').value)     || 0;
-  const x = parseFloat(document.getElementById('pfm-opex').value)    || 0;
-  const total = p + o + t + x;
+function updatePFModalHints() {
+  const rev = parseFloat(document.getElementById('pfm-revenue').value) || 0;
+  const defs = [
+    { hintId:'pfm-profit-hint', pct:pfTargets.profit_pct,     inputId:'pfm-profit',  hib:true  },
+    { hintId:'pfm-owners-hint', pct:pfTargets.owners_pay_pct, inputId:'pfm-owners',  hib:true  },
+    { hintId:'pfm-tax-hint',    pct:pfTargets.tax_pct,        inputId:'pfm-tax',     hib:true  },
+    { hintId:'pfm-opex-hint',   pct:pfTargets.opex_pct,       inputId:'pfm-opex',    hib:false },
+  ];
+  defs.forEach(d => {
+    const teorico = Math.round(rev * d.pct / 100);
+    const real    = parseFloat(document.getElementById(d.inputId).value);
+    const el      = document.getElementById(d.hintId);
+    el.textContent = `obj: ${$f(teorico)}`;
+    if (!isNaN(real)) {
+      el.style.color = d.hib
+        ? (real >= teorico ? 'var(--grn)' : 'var(--red2)')
+        : (real <= teorico ? 'var(--grn)' : 'var(--ylw)');
+    } else {
+      el.style.color = 'var(--t3)';
+    }
+  });
+  // Total separado
+  const p = parseFloat(document.getElementById('pfm-profit').value) || 0;
+  const o = parseFloat(document.getElementById('pfm-owners').value) || 0;
+  const t = parseFloat(document.getElementById('pfm-tax').value)    || 0;
+  const x = parseFloat(document.getElementById('pfm-opex').value)   || 0;
+  const tot = p + o + t + x;
   const el = document.getElementById('pf-modal-sum');
-  el.style.color = total > 100 ? 'var(--red2)' : total === 100 ? 'var(--grn)' : 'var(--t3)';
-  el.textContent = total > 100
-    ? `Total: ${total.toFixed(1)}% ⚠ supera 100%`
-    : total === 100
-      ? `Total: ${total.toFixed(1)}% ✓`
-      : `Total: ${total.toFixed(1)}% (${(100-total).toFixed(1)}% sin asignar)`;
+  el.textContent = rev > 0
+    ? `Separado: ${$f(tot)} de ${$f(rev)} (${Math.round(tot/rev*100)}%)`
+    : '';
+  el.style.color = 'var(--t3)';
 }
 
 function savePFModal() {
+  const _v = id => { const v = document.getElementById(id).value; return v === '' ? null : parseFloat(v); };
   pfMonthly[getPFKey(_pfEditYear, _pfEditMonth)] = {
-    real_revenue:   parseFloat(document.getElementById('pfm-revenue').value) || 0,
-    profit_pct:     parseFloat(document.getElementById('pfm-profit').value)  || 0,
-    owners_pay_pct: parseFloat(document.getElementById('pfm-owners').value)  || 0,
-    tax_pct:        parseFloat(document.getElementById('pfm-tax').value)     || 0,
-    opex_pct:       parseFloat(document.getElementById('pfm-opex').value)    || 0,
+    real_revenue:    parseFloat(document.getElementById('pfm-revenue').value) || 0,
+    profit_real:     _v('pfm-profit'),
+    owners_pay_real: _v('pfm-owners'),
+    tax_real:        _v('pfm-tax'),
+    opex_real:       _v('pfm-opex'),
   };
   closeModal('ov-pf');
   debounceSave();
