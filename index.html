@@ -388,6 +388,7 @@ body.light .inactive-row td { opacity:.5; }
   <button class="sb-btn" onclick="goPage('proyectos')">◇ Proyectos</button>
   <button class="sb-btn" onclick="goPage('metricas')">▦ Métricas</button>
   <button class="sb-btn" onclick="goPage('profit-first')">◈ Profit First</button>
+  <button class="sb-btn" onclick="goPage('churn')">◎ Churn & Adq.</button>
   <div class="sb-sec">Clientes Activos</div>
   <div class="sb-clients" id="sb-clients"></div>
   <div class="sb-footer">
@@ -742,6 +743,22 @@ body.light .inactive-row td { opacity:.5; }
       </div>
     </div>
 
+    <!-- CHURN & ADQUISICIÓN -->
+    <div class="page" id="page-churn">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button onclick="caYear--;renderChurnAcq()" style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:4px 10px;color:var(--t2);font-family:var(--mono);font-size:13px;font-weight:700;cursor:pointer;">←</button>
+          <span id="ca-year-label" style="font-family:var(--mono);font-size:16px;font-weight:900;min-width:50px;text-align:center;color:var(--red2)"></span>
+          <button onclick="caYear++;renderChurnAcq()" style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:4px 10px;color:var(--t2);font-family:var(--mono);font-size:13px;font-weight:700;cursor:pointer;">→</button>
+        </div>
+        <div style="display:flex;gap:14px;font-size:10px;font-family:var(--mono);">
+          <span style="color:var(--grn)">● Positivo / En objetivo</span>
+          <span style="color:var(--red2)">● Negativo / Bajo objetivo</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" id="ca-grid"></div>
+    </div>
+
     <!-- CLIENT DETAIL -->
     <div class="page" id="page-client">
       <div id="client-content"></div>
@@ -876,6 +893,29 @@ body.light .inactive-row td { opacity:.5; }
   </div>
 </div>
 
+<!-- MODAL CHURN & ADQ -->
+<div class="overlay" id="ov-ca">
+  <div class="modal">
+    <div class="mclose" onclick="closeModal('ov-ca')">✕</div>
+    <div class="modal-title" id="ca-modal-title">Editar mes</div>
+    <div class="frow">
+      <div class="fg">
+        <label>Adquisición <span style="font-size:10px;color:var(--t3)">(clientes ganados)</span></label>
+        <input class="fi" id="ca-acq" type="number" min="0" step="1" placeholder="0" />
+      </div>
+      <div class="fg">
+        <label>Churn <span style="font-size:10px;color:var(--t3)">(clientes perdidos)</span></label>
+        <input class="fi" id="ca-churn" type="number" min="0" step="1" placeholder="0" />
+      </div>
+    </div>
+    <div style="font-size:11px;font-family:var(--mono);color:var(--t3);padding:6px 0;border-top:1px solid var(--b1);" id="ca-modal-neto"></div>
+    <div class="mactions">
+      <button class="btn btn-g" onclick="closeModal('ov-ca')">Cancelar</button>
+      <button class="btn btn-p" onclick="saveCAModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════
 // CONSTANTS
@@ -972,6 +1012,10 @@ let pfTargets = { profit_pct:5, owners_pay_pct:50, tax_pct:15, opex_pct:30 };
 let pfMonthly  = {}; // key: `${year}_${mi}` (mi=1-12), value: {real_revenue, profit_real, owners_pay_real, tax_real, opex_real}
 let pfYear = 2026;
 let _pfEditYear = 2026, _pfEditMonth = 1;
+let caData    = {}; // Churn & Adq real: key `${year}_${mi}` → {acq, churn}
+let caTargets = {}; // Churn & Adq objetivo: key `${year}_${mi}` → {acq, churn}
+let caYear    = 2026;
+let _caEdit   = { year:2026, mi:1, type:'data' };
 
 function makeClient(name, cycleDay, qty, mrr, svcs, notes, startDate) {
   const c = blankClient(name, cycleDay, 'Transferencia USD');
@@ -1752,8 +1796,8 @@ function goPage(p){
   curPage=p; closeSidebar();
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
   document.getElementById('page-'+p).classList.add('on');
-  document.querySelectorAll('.sb-btn').forEach((x,i)=>x.classList.toggle('on',['dashboard','pagos','equipo','comparativa','proyectos','metricas','profit-first'][i]===p));
-  const titles={dashboard:'Dashboard',pagos:'Pagos',equipo:'Equipo',comparativa:'Comparativa',proyectos:'Proyectos',metricas:'Métricas','profit-first':'Profit First'};
+  document.querySelectorAll('.sb-btn').forEach((x,i)=>x.classList.toggle('on',['dashboard','pagos','equipo','comparativa','proyectos','metricas','profit-first','churn'][i]===p));
+  const titles={dashboard:'Dashboard',pagos:'Pagos',equipo:'Equipo',comparativa:'Comparativa',proyectos:'Proyectos',metricas:'Métricas','profit-first':'Profit First',churn:'Churn & Adquisición'};
   document.getElementById('topbar-title').textContent=titles[p]||'';
   renderSidebar();
   if(p==='dashboard')renderDashboard();
@@ -1763,6 +1807,7 @@ function goPage(p){
   if(p==='proyectos')renderProyectos();
   if(p==='metricas')renderMetricas();
   if(p==='profit-first')renderProfitFirst();
+  if(p==='churn')renderChurnAcq();
 }
 function openClient(id){
   curClientId=id; curPage='client'; closeSidebar();
@@ -3101,7 +3146,7 @@ function showIndicator(msg, color) {
 }
 
 async function saveData() {
-  const data = { clients, payments, editors, fixedSalaries, projects, fixedIncomes, monthlyOverhead, pfTargets, pfMonthly, savedAt: new Date().toISOString() };
+  const data = { clients, payments, editors, fixedSalaries, projects, fixedIncomes, monthlyOverhead, pfTargets, pfMonthly, caData, caTargets, savedAt: new Date().toISOString() };
   // Always save to localStorage as backup
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
   // Save to Supabase
@@ -3146,6 +3191,8 @@ async function loadData() {
         if(d.monthlyOverhead)  monthlyOverhead  = d.monthlyOverhead;
         if(d.pfTargets)        pfTargets        = d.pfTargets;
         if(d.pfMonthly)        pfMonthly        = d.pfMonthly;
+        if(d.caData)           caData           = d.caData;
+        if(d.caTargets)        caTargets        = d.caTargets;
         // Sincronizar localStorage con Supabase para evitar datos rancios
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
         console.log('✓ Datos cargados desde Supabase —', d.savedAt);
@@ -3167,6 +3214,8 @@ async function loadData() {
     if(d.monthlyOverhead)  monthlyOverhead  = d.monthlyOverhead;
     if(d.pfTargets)        pfTargets        = d.pfTargets;
     if(d.pfMonthly)        pfMonthly        = d.pfMonthly;
+    if(d.caData)           caData           = d.caData;
+    if(d.caTargets)        caTargets        = d.caTargets;
     console.log('✓ Datos cargados desde localStorage');
     return true;
   } catch(e) { return false; }
@@ -3533,6 +3582,149 @@ function savePFTargets() {
   pfTargets.opex_pct       = parseFloat(document.getElementById('pft-opex').value)   || 0;
   debounceSave();
   renderProfitFirst();
+}
+
+// ══════════════════════════════════════════════════════
+// CHURN & ADQUISICIÓN
+// ══════════════════════════════════════════════════════
+function getCAKey(year, mi) { return `${year}_${mi}`; }
+function getCAData(year, mi) {
+  const k = getCAKey(year, mi);
+  if (!caData[k]) caData[k] = { acq: null, churn: null };
+  return caData[k];
+}
+function getCATarget(year, mi) {
+  const k = getCAKey(year, mi);
+  if (!caTargets[k]) caTargets[k] = { acq: null, churn: null };
+  return caTargets[k];
+}
+
+function _caRenderTable(year, panelType) {
+  const rowLabels = { acq: 'Adquisición', churn: 'Churn', neto: 'Neto' };
+  let h = '<table class="pf-table" style="width:100%"><thead><tr><th class="pf-row-header">Métrica</th>';
+  SHORT_M.forEach(m => h += `<th>${m}</th>`);
+  h += '<th>Total</th></tr></thead><tbody>';
+
+  ['acq', 'churn', 'neto'].forEach(rowKey => {
+    h += `<tr><td class="pf-row-label">${rowLabels[rowKey]}</td>`;
+    let total = 0, totalHasData = false;
+
+    for (let mi = 1; mi <= 12; mi++) {
+      let val = null, color = 'var(--t2)', clickable = false;
+
+      if (panelType === 'hist' || panelType === 'data') {
+        const d = getCAData(year, mi);
+        if (rowKey === 'neto') {
+          if (d.acq !== null || d.churn !== null) {
+            val = (d.acq ?? 0) - (d.churn ?? 0);
+            color = val >= 0 ? 'var(--grn)' : 'var(--red2)';
+          }
+        } else { val = d[rowKey]; clickable = true; }
+      } else if (panelType === 'target') {
+        const d = getCATarget(year, mi);
+        if (rowKey === 'neto') {
+          if (d.acq !== null || d.churn !== null) {
+            val = (d.acq ?? 0) - (d.churn ?? 0);
+            color = val >= 0 ? 'var(--grn)' : 'var(--red2)';
+          }
+        } else { val = d[rowKey]; clickable = true; }
+      } else { // disc
+        const real = getCAData(year, mi);
+        const tgt  = getCATarget(year, mi);
+        if (rowKey === 'acq') {
+          if (real.acq !== null && tgt.acq !== null) {
+            val = real.acq - tgt.acq;
+            color = val >= 0 ? 'var(--grn)' : 'var(--red2)';
+          }
+        } else if (rowKey === 'churn') {
+          if (real.churn !== null && tgt.churn !== null) {
+            val = real.churn - tgt.churn;
+            color = val <= 0 ? 'var(--grn)' : 'var(--red2)';
+          }
+        } else {
+          const rn = (real.acq ?? 0) - (real.churn ?? 0);
+          const tn = (tgt.acq ?? 0) - (tgt.churn ?? 0);
+          if (real.acq !== null || real.churn !== null || tgt.acq !== null || tgt.churn !== null) {
+            val = rn - tn;
+            color = val >= 0 ? 'var(--grn)' : 'var(--red2)';
+          }
+        }
+      }
+
+      if (val !== null) { total += val; totalHasData = true; }
+
+      const prefix = (panelType === 'disc' && val !== null && val > 0) ? '+' : '';
+      const display = val !== null ? prefix + val : '—';
+      const bold = rowKey === 'neto' ? 'font-weight:700;' : '';
+      const editType = panelType === 'hist' ? 'data' : panelType;
+      const cellAttr = clickable
+        ? `onclick="openCAModal(${year},${mi},'${editType}')" style="cursor:pointer;${bold}color:${color}"`
+        : `style="${bold}color:${color}"`;
+      h += `<td ${cellAttr}>${display}</td>`;
+    }
+
+    const totalColor = rowKey === 'neto' ? (total >= 0 ? 'var(--grn)' : 'var(--red2)')
+                     : panelType === 'disc' && rowKey === 'acq'   ? (total >= 0 ? 'var(--grn)' : 'var(--red2)')
+                     : panelType === 'disc' && rowKey === 'churn' ? (total <= 0 ? 'var(--grn)' : 'var(--red2)')
+                     : 'var(--t2)';
+    const totalBold = rowKey === 'neto' ? 'font-weight:700;' : '';
+    const totalPrefix = (panelType === 'disc' && totalHasData && total > 0 && rowKey !== 'neto') ? '+' : '';
+    h += `<td style="${totalBold}font-family:var(--mono);color:${totalColor}">${totalHasData ? totalPrefix + total : '—'}</td></tr>`;
+  });
+
+  return h + '</tbody></table>';
+}
+
+function renderChurnAcq() {
+  document.getElementById('ca-year-label').textContent = caYear;
+  const panels = [
+    { title: `Histórico ${caYear - 1}`,        type: 'hist',   year: caYear - 1 },
+    { title: `Escenario Objetivo ${caYear}`,   type: 'target', year: caYear     },
+    { title: `Realidad ${caYear}`,             type: 'data',   year: caYear     },
+    { title: `Discrepancia ${caYear}`,         type: 'disc',   year: caYear     },
+  ];
+  document.getElementById('ca-grid').innerHTML = panels.map(p => `
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">${p.title}</span>
+        ${p.type !== 'disc' ? '<span style="font-size:10px;color:var(--t3);font-family:var(--mono)">click → editar</span>' : ''}
+      </div>
+      <div style="overflow-x:auto">${_caRenderTable(p.year, p.type)}</div>
+    </div>
+  `).join('');
+}
+
+function openCAModal(year, mi, type) {
+  _caEdit = { year, mi, type };
+  const d = type === 'target' ? getCATarget(year, mi) : getCAData(year, mi);
+  const typeLabel = type === 'target' ? 'Objetivo' : year < caYear ? 'Histórico' : 'Realidad';
+  document.getElementById('ca-modal-title').textContent = `${typeLabel} — ${MONTHS[mi-1]} ${year}`;
+  document.getElementById('ca-acq').value   = d.acq   !== null ? d.acq   : '';
+  document.getElementById('ca-churn').value = d.churn !== null ? d.churn : '';
+  updateCAModalNeto();
+  document.getElementById('ov-ca').classList.add('on');
+  document.getElementById('ca-acq').oninput = updateCAModalNeto;
+  document.getElementById('ca-churn').oninput = updateCAModalNeto;
+}
+
+function updateCAModalNeto() {
+  const acq   = parseInt(document.getElementById('ca-acq').value)   || 0;
+  const churn = parseInt(document.getElementById('ca-churn').value) || 0;
+  const neto  = acq - churn;
+  const el    = document.getElementById('ca-modal-neto');
+  el.textContent = `Neto: ${neto >= 0 ? '+' : ''}${neto}`;
+  el.style.color = neto >= 0 ? 'var(--grn)' : 'var(--red2)';
+}
+
+function saveCAModal() {
+  const { year, mi, type } = _caEdit;
+  const _v = id => { const v = document.getElementById(id).value; return v === '' ? null : parseInt(v, 10); };
+  const obj = { acq: _v('ca-acq'), churn: _v('ca-churn') };
+  if (type === 'target') caTargets[getCAKey(year, mi)] = obj;
+  else caData[getCAKey(year, mi)] = obj;
+  closeModal('ov-ca');
+  debounceSave();
+  renderChurnAcq();
 }
 
 // ══════════════════════════════════════════════════════
