@@ -745,6 +745,7 @@ body.light .inactive-row td { opacity:.5; }
 
     <!-- CHURN & ADQUISICIÓN -->
     <div class="page" id="page-churn">
+      <!-- Top bar: year nav + legend -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
         <div style="display:flex;align-items:center;gap:8px;">
           <button onclick="caYear--;renderChurnAcq()" style="background:var(--s2);border:1px solid var(--b1);border-radius:4px;padding:4px 10px;color:var(--t2);font-family:var(--mono);font-size:13px;font-weight:700;cursor:pointer;">←</button>
@@ -756,6 +757,35 @@ body.light .inactive-row td { opacity:.5; }
           <span style="color:var(--red2)">● Negativo / Bajo objetivo</span>
         </div>
       </div>
+      <!-- KPI cards -->
+      <div id="ca-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;"></div>
+      <!-- Proyección -->
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head">
+          <span class="card-title">Proyección</span>
+          <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">calculado automáticamente</span>
+        </div>
+        <div style="padding:14px 16px">
+          <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;">
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);font-family:var(--mono);display:block;margin-bottom:4px">Objetivo MRR (USD)</label>
+              <input id="ca-goal-mrr" class="fi" type="number" step="1000" placeholder="50000" oninput="updateCAProjection()" style="width:130px;padding:6px 10px;font-size:13px;" />
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);font-family:var(--mono);display:block;margin-bottom:4px">Proyectos/mes (USD)</label>
+              <input id="ca-goal-projects" class="fi" type="number" step="100" placeholder="1000" oninput="updateCAProjection()" style="width:130px;padding:6px 10px;font-size:13px;" />
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);font-family:var(--mono);display:block;margin-bottom:4px">Ticket objetivo (USD)</label>
+              <input id="ca-goal-ticket" class="fi" type="number" step="50" placeholder="auto" oninput="updateCAProjection()" style="width:130px;padding:6px 10px;font-size:13px;" />
+              <span id="ca-ticket-auto" style="font-size:10px;color:var(--t3);font-family:var(--mono);margin-left:6px;"></span>
+            </div>
+            <button onclick="applyCAProjection()" class="btn btn-p" style="align-self:flex-end;padding:7px 16px;font-size:11px;">↓ Aplicar como Objetivo</button>
+          </div>
+          <div id="ca-proj-table" style="overflow-x:auto"></div>
+        </div>
+      </div>
+      <!-- Tablas históricas -->
       <div style="display:grid;grid-template-columns:1fr;gap:14px;" id="ca-grid"></div>
     </div>
 
@@ -1016,6 +1046,7 @@ let caData    = {}; // Churn & Adq real: key `${year}_${mi}` → {acq, churn}
 let caTargets = {}; // Churn & Adq objetivo: key `${year}_${mi}` → {acq, churn}
 let caYear    = 2026;
 let _caEdit   = { year:2026, mi:1, type:'data' };
+let caProjection = { goalMRR: 50000, goalProjects: 1000, goalTicket: null };
 
 function makeClient(name, cycleDay, qty, mrr, svcs, notes, startDate) {
   const c = blankClient(name, cycleDay, 'Transferencia USD');
@@ -3146,7 +3177,7 @@ function showIndicator(msg, color) {
 }
 
 async function saveData() {
-  const data = { clients, payments, editors, fixedSalaries, projects, fixedIncomes, monthlyOverhead, pfTargets, pfMonthly, caData, caTargets, savedAt: new Date().toISOString() };
+  const data = { clients, payments, editors, fixedSalaries, projects, fixedIncomes, monthlyOverhead, pfTargets, pfMonthly, caData, caTargets, caProjection, savedAt: new Date().toISOString() };
   // Always save to localStorage as backup
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
   // Save to Supabase
@@ -3193,6 +3224,7 @@ async function loadData() {
         if(d.pfMonthly)        pfMonthly        = d.pfMonthly;
         if(d.caData)           caData           = d.caData;
         if(d.caTargets)        caTargets        = d.caTargets;
+        if(d.caProjection)     caProjection     = d.caProjection;
         // Sincronizar localStorage con Supabase para evitar datos rancios
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
         console.log('✓ Datos cargados desde Supabase —', d.savedAt);
@@ -3216,6 +3248,7 @@ async function loadData() {
     if(d.pfMonthly)        pfMonthly        = d.pfMonthly;
     if(d.caData)           caData           = d.caData;
     if(d.caTargets)        caTargets        = d.caTargets;
+    if(d.caProjection)     caProjection     = d.caProjection;
     console.log('✓ Datos cargados desde localStorage');
     return true;
   } catch(e) { return false; }
@@ -3585,6 +3618,135 @@ function savePFTargets() {
 }
 
 // ══════════════════════════════════════════════════════
+// CHURN & ADQUISICIÓN — HELPERS
+// ══════════════════════════════════════════════════════
+function calcAvgTicket() {
+  const activeIds = new Set(clients.filter(c => c.active).map(c => c.id));
+  const now = new Date();
+  const recentPeriods = new Set();
+  for (let i = 1; i <= 3; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    recentPeriods.add(`${MONTHS[d.getMonth()]}_${d.getFullYear()}`);
+  }
+  const byCP = {};
+  payments.forEach(p => {
+    if (!activeIds.has(p.clientId) || !recentPeriods.has(p.period)) return;
+    const k = p.clientId + '_' + p.period;
+    byCP[k] = (byCP[k] || 0) + ((p.amount || 0) - (p.fees || 0));
+  });
+  const vals = Object.values(byCP).filter(v => v > 0);
+  return vals.length ? Math.round(vals.reduce((a,b) => a+b, 0) / vals.length) : 892;
+}
+
+function calcHistAvgChurn() {
+  let total = 0, count = 0;
+  Object.values(caData).forEach(d => {
+    if (d.churn !== null) { total += d.churn; count++; }
+  });
+  return count > 0 ? +(total / count).toFixed(1) : 2;
+}
+
+function renderCAKPIs() {
+  const avgTicket = calcAvgTicket();
+  const activeCt  = clients.filter(c => c.active).length;
+  const mrr        = activeCt * avgTicket;
+  const avgChurn   = calcHistAvgChurn();
+  const kpis = [
+    { l:'Ticket promedio', v:'$'+$f(avgTicket), s:'últimos 3 meses · clientes activos' },
+    { l:'Clientes activos', v:activeCt, s:'hoy' },
+    { l:'MRR estimado', v:'$'+$f(mrr), s:'clientes × ticket prom' },
+    { l:'Churn histórico', v:avgChurn+'/mes', s:'promedio histórico' },
+  ];
+  document.getElementById('ca-kpis').innerHTML = kpis.map(k =>
+    `<div class="kpi hi"><div class="kpi-l">${k.l}</div><div class="kpi-v">${k.v}</div><div class="kpi-s">${k.s}</div></div>`
+  ).join('');
+}
+
+function updateCAProjection() {
+  // Save inputs to caProjection
+  const goalMRR     = parseFloat(document.getElementById('ca-goal-mrr').value)      || caProjection.goalMRR     || 50000;
+  const goalProj    = parseFloat(document.getElementById('ca-goal-projects').value)  || caProjection.goalProjects || 1000;
+  const ticketInput = parseFloat(document.getElementById('ca-goal-ticket').value);
+  const avgTicket   = calcAvgTicket();
+  const goalTicket  = ticketInput > 0 ? ticketInput : (caProjection.goalTicket || avgTicket);
+
+  caProjection = { goalMRR, goalProjects: goalProj, goalTicket: ticketInput > 0 ? goalTicket : null };
+  debounceSave();
+
+  // Show auto ticket hint
+  document.getElementById('ca-ticket-auto').textContent = ticketInput > 0 ? '' : `(usando $${avgTicket} actual)`;
+
+  // Months from next month to December of caYear
+  const now = new Date();
+  const startMi = (caYear === now.getFullYear()) ? now.getMonth() + 2 : 1; // next month
+  const endMi   = 12;
+  if (startMi > endMi) {
+    document.getElementById('ca-proj-table').innerHTML = '<p style="color:var(--t3);font-size:12px;font-family:var(--mono);padding:8px 0">Año completado — cambiá el año para proyectar.</p>';
+    return;
+  }
+
+  const activeCt   = clients.filter(c => c.active).length;
+  const avgChurn   = calcHistAvgChurn();
+  const retainerGoal = goalMRR - goalProj;
+  const clientsNeeded = Math.ceil(retainerGoal / goalTicket);
+  const netNeeded     = clientsNeeded - activeCt;
+  const monthsLeft    = endMi - startMi + 1;
+  const netPerMonth   = netNeeded / monthsLeft;
+  const acqPerMonth   = Math.ceil(netPerMonth + avgChurn);
+
+  let h = `<div style="font-size:11px;font-family:var(--mono);color:var(--t3);margin-bottom:10px;">`;
+  h += `Meta: <strong style="color:var(--t1)">$${$f(goalMRR)}</strong> · `;
+  h += `Clientes necesarios: <strong style="color:var(--t1)">${clientsNeeded}</strong> · `;
+  h += `Altas/mes: <strong style="color:var(--grn)">${acqPerMonth}</strong> · `;
+  h += `Bajas/mes est.: <strong style="color:var(--red2)">${avgChurn}</strong> · `;
+  h += `Neto: <strong style="color:var(--t1)">+${acqPerMonth - avgChurn}</strong>/mes</div>`;
+
+  h += '<table class="pf-table"><thead><tr>';
+  h += '<th class="pf-row-header">Mes</th><th>Altas obj</th><th>Bajas est</th><th>Clientes</th><th>MRR retainer</th><th>Total c/proy</th></tr></thead><tbody>';
+
+  let c = activeCt;
+  for (let mi = startMi; mi <= endMi; mi++) {
+    c += acqPerMonth - Math.round(avgChurn);
+    const mrr   = c * goalTicket;
+    const total = mrr + goalProj;
+    const color = total >= goalMRR ? 'var(--grn)' : 'var(--t2)';
+    h += `<tr>
+      <td class="pf-row-label">${SHORT_M[mi-1]}</td>
+      <td style="color:var(--grn)">${acqPerMonth}</td>
+      <td style="color:var(--red2)">${Math.round(avgChurn)}</td>
+      <td style="font-weight:700">${c}</td>
+      <td>$${$f(Math.round(mrr))}</td>
+      <td style="font-weight:700;color:${color}">$${$f(Math.round(total))}</td>
+    </tr>`;
+  }
+  h += '</tbody></table>';
+  document.getElementById('ca-proj-table').innerHTML = h;
+}
+
+function applyCAProjection() {
+  const goalMRR    = parseFloat(document.getElementById('ca-goal-mrr').value)     || 50000;
+  const goalProj   = parseFloat(document.getElementById('ca-goal-projects').value) || 1000;
+  const ticketInp  = parseFloat(document.getElementById('ca-goal-ticket').value);
+  const avgTicket  = calcAvgTicket();
+  const goalTicket = ticketInp > 0 ? ticketInp : avgTicket;
+  const activeCt   = clients.filter(c => c.active).length;
+  const avgChurn   = calcHistAvgChurn();
+  const clientsNeeded = Math.ceil((goalMRR - goalProj) / goalTicket);
+  const now        = new Date();
+  const startMi    = (caYear === now.getFullYear()) ? now.getMonth() + 2 : 1;
+  const monthsLeft = 12 - startMi + 1;
+  const netPerMonth = (clientsNeeded - activeCt) / monthsLeft;
+  const acqPerMonth = Math.ceil(netPerMonth + avgChurn);
+
+  for (let mi = startMi; mi <= 12; mi++) {
+    caTargets[getCAKey(caYear, mi)] = { acq: acqPerMonth, churn: Math.round(avgChurn) };
+  }
+  debounceSave();
+  renderChurnAcq();
+  alert(`✓ Objetivo aplicado: ${acqPerMonth} altas · ${Math.round(avgChurn)} bajas · neto +${acqPerMonth - Math.round(avgChurn)} por mes`);
+}
+
+// ══════════════════════════════════════════════════════
 // CHURN & ADQUISICIÓN
 // ══════════════════════════════════════════════════════
 function getCAKey(year, mi) { return `${year}_${mi}`; }
@@ -3677,6 +3839,15 @@ function _caRenderTable(year, panelType) {
 
 function renderChurnAcq() {
   document.getElementById('ca-year-label').textContent = caYear;
+  renderCAKPIs();
+  // Init projection inputs from saved state
+  const mrr = document.getElementById('ca-goal-mrr');
+  const proj = document.getElementById('ca-goal-projects');
+  const tck  = document.getElementById('ca-goal-ticket');
+  if (mrr  && !mrr.value)  mrr.value  = caProjection.goalMRR      || 50000;
+  if (proj && !proj.value) proj.value = caProjection.goalProjects  || 1000;
+  if (tck  && !tck.value && caProjection.goalTicket) tck.value = caProjection.goalTicket;
+  updateCAProjection();
   const panels = [
     { title: `Histórico ${caYear - 1}`,        type: 'hist',   year: caYear - 1 },
     { title: `Escenario Objetivo ${caYear}`,   type: 'target', year: caYear     },
