@@ -3694,29 +3694,41 @@ function updateCAProjection() {
   const netPerMonth   = netNeeded / monthsLeft;
   const acqPerMonth   = Math.ceil(netPerMonth + avgChurn);
 
+  // Curva lineal exacta: cada mes tiene los clientes interpolados hacia el objetivo
+  const churnRnd = Math.round(avgChurn);
+  const months_arr = [];
+  let prevC = activeCt;
+  for (let idx = 1; idx <= monthsLeft; idx++) {
+    const targetC = activeCt + Math.round(netNeeded * idx / monthsLeft);
+    const netGain = targetC - prevC;
+    const altas   = netGain + churnRnd;
+    months_arr.push({ mi: startMi + idx - 1, c: targetC, altas, bajas: churnRnd });
+    prevC = targetC;
+  }
+
+  const avgAltas = (months_arr.reduce((s,m)=>s+m.altas,0)/months_arr.length).toFixed(1);
+
   let h = `<div style="font-size:11px;font-family:var(--mono);color:var(--t3);margin-bottom:10px;">`;
-  h += `Meta: <strong style="color:var(--t1)">$${$f(goalMRR)}</strong> · `;
+  h += `Meta: <strong style="color:var(--t1)">${$f(goalMRR)}</strong> · `;
   h += `Clientes necesarios: <strong style="color:var(--t1)">${clientsNeeded}</strong> · `;
-  h += `Altas/mes: <strong style="color:var(--grn)">${acqPerMonth}</strong> · `;
-  h += `Bajas/mes est.: <strong style="color:var(--red2)">${avgChurn}</strong> · `;
-  h += `Neto: <strong style="color:var(--t1)">+${acqPerMonth - avgChurn}</strong>/mes</div>`;
+  h += `Altas promedio: <strong style="color:var(--grn)">${avgAltas}/mes</strong> · `;
+  h += `Bajas est.: <strong style="color:var(--red2)">${churnRnd}/mes</strong> · `;
+  h += `Neto prom: <strong style="color:var(--t1)">+${(netNeeded/monthsLeft).toFixed(1)}</strong>/mes</div>`;
 
   h += '<table class="pf-table"><thead><tr>';
   h += '<th class="pf-row-header">Mes</th><th>Altas obj</th><th>Bajas est</th><th>Clientes</th><th>MRR retainer</th><th>Total c/proy</th></tr></thead><tbody>';
 
-  let c = activeCt;
-  for (let mi = startMi; mi <= endMi; mi++) {
-    c += acqPerMonth - Math.round(avgChurn);
-    const mrr   = c * goalTicket;
+  for (const m of months_arr) {
+    const mrr   = m.c * goalTicket;
     const total = mrr + goalProj;
     const color = total >= goalMRR ? 'var(--grn)' : 'var(--t2)';
     h += `<tr>
-      <td class="pf-row-label">${SHORT_M[mi-1]}</td>
-      <td style="color:var(--grn)">${acqPerMonth}</td>
-      <td style="color:var(--red2)">${Math.round(avgChurn)}</td>
-      <td style="font-weight:700">${c}</td>
-      <td>$${$f(Math.round(mrr))}</td>
-      <td style="font-weight:700;color:${color}">$${$f(Math.round(total))}</td>
+      <td class="pf-row-label">${SHORT_M[m.mi-1]}</td>
+      <td style="color:var(--grn)">${m.altas}</td>
+      <td style="color:var(--red2)">${m.bajas}</td>
+      <td style="font-weight:700">${m.c}</td>
+      <td>${$f(Math.round(mrr))}</td>
+      <td style="font-weight:700;color:${color}">${$f(Math.round(total))}</td>
     </tr>`;
   }
   h += '</tbody></table>';
@@ -3735,15 +3747,19 @@ function applyCAProjection() {
   const now        = new Date();
   const startMi    = (caYear === now.getFullYear()) ? now.getMonth() + 2 : 1;
   const monthsLeft = 12 - startMi + 1;
-  const netPerMonth = (clientsNeeded - activeCt) / monthsLeft;
-  const acqPerMonth = Math.ceil(netPerMonth + avgChurn);
-
-  for (let mi = startMi; mi <= 12; mi++) {
-    caTargets[getCAKey(caYear, mi)] = { acq: acqPerMonth, churn: Math.round(avgChurn) };
+  const netNeeded  = clientsNeeded - activeCt;
+  const churnRnd   = Math.round(avgChurn);
+  let prevC = activeCt;
+  for (let idx = 1; idx <= monthsLeft; idx++) {
+    const mi      = startMi + idx - 1;
+    const targetC = activeCt + Math.round(netNeeded * idx / monthsLeft);
+    const altas   = (targetC - prevC) + churnRnd;
+    caTargets[getCAKey(caYear, mi)] = { acq: altas, churn: churnRnd };
+    prevC = targetC;
   }
   debounceSave();
   renderChurnAcq();
-  alert(`✓ Objetivo aplicado: ${acqPerMonth} altas · ${Math.round(avgChurn)} bajas · neto +${acqPerMonth - Math.round(avgChurn)} por mes`);
+  alert(`✓ Objetivo aplicado: curva lineal hacia ${clientsNeeded} clientes en diciembre`);
 }
 
 // ══════════════════════════════════════════════════════
