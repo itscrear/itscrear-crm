@@ -3741,9 +3741,9 @@ function renderCAKPIs() {
   const mrr        = activeCt * avgTicket;
   const avgChurn   = calcHistAvgChurn();
   const kpis = [
-    { l:'Ticket promedio', v:'$'+$f(avgTicket), s:'últimos 3 meses · clientes activos' },
+    { l:'Ticket promedio', v:$f(avgTicket), s:'últimos 3 meses · clientes activos' },
     { l:'Clientes activos', v:activeCt, s:'hoy' },
-    { l:'MRR estimado', v:'$'+$f(mrr), s:'clientes × ticket prom' },
+    { l:'MRR estimado', v:$f(mrr), s:'clientes × ticket prom' },
     { l:'Churn histórico', v:avgChurn+'/mes', s:'promedio histórico' },
   ];
   document.getElementById('ca-kpis').innerHTML = kpis.map(k =>
