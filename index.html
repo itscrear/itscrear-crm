@@ -741,6 +741,21 @@ body.light .inactive-row td { opacity:.5; }
         </div>
         <div style="padding:16px;position:relative;height:280px"><canvas id="pf-chart"></canvas></div>
       </div>
+      <!-- Medición Micro -->
+      <div class="card" id="pf-micro-card">
+        <div class="card-head">
+          <span class="card-title">Medición Micro · <span id="pf-micro-period" style="color:var(--red2)"></span></span>
+          <div style="display:flex;gap:14px;align-items:center;">
+            <div style="display:flex;gap:10px;font-size:10px;font-family:var(--mono);">
+              <span style="color:var(--grn)">● &lt;30%</span>
+              <span style="color:var(--ylw)">● 30–40%</span>
+              <span style="color:var(--red2)">● &gt;40%</span>
+            </div>
+            <span style="font-size:10px;color:var(--t3);font-family:var(--mono)">costo equipo / revenue · mes seleccionado</span>
+          </div>
+        </div>
+        <div style="overflow-x:auto"><table class="pf-table" id="pf-micro-table"></table></div>
+      </div>
     </div>
 
     <!-- CHURN & ADQUISICIÓN -->
@@ -3507,6 +3522,7 @@ function renderProfitFirst() {
     });
   });
 
+  renderMedicionMicro();
   if (window._pfChart) window._pfChart.destroy();
   const ctx = document.getElementById('pf-chart')?.getContext('2d');
   if (!ctx) return;
@@ -3623,6 +3639,62 @@ function savePFModal() {
   closeModal('ov-pf');
   debounceSave();
   renderProfitFirst();
+}
+
+function renderMedicionMicro() {
+  const month = curMonth;
+  const year  = pfYear;
+  document.getElementById('pf-micro-period').textContent = `${month} ${year}`;
+
+  const rows = clients
+    .filter(c => c.active && clientActiveInMonth(c, month, year))
+    .map(c => {
+      const r      = calcClient(c, month, year);
+      const fixed  = clientFixedCosts(c, month, year);
+      const piezas = (fixed._clientPiezas || 0) + (fixed._clientCarruseles || 0);
+      const pct    = r.netCC > 0 ? (r.costoTotal / r.netCC * 100) : 0;
+      const costoPieza = piezas > 0 ? r.costoTotal / piezas : null;
+      return { name: c.name, piezas, rev: r.netCC, costo: r.costoTotal, pct, costoPieza };
+    })
+    .sort((a, b) => b.pct - a.pct);
+
+  let h = `<thead><tr>
+    <th class="pf-row-header">Cliente</th>
+    <th>Piezas</th>
+    <th>Revenue</th>
+    <th>Costo Equipo</th>
+    <th>% Equipo</th>
+    <th>Costo / Pieza</th>
+  </tr></thead><tbody>`;
+
+  rows.forEach(row => {
+    const color = row.pct > 40 ? 'var(--red2)' : row.pct > 30 ? 'var(--ylw)' : 'var(--grn)';
+    h += `<tr>
+      <td class="pf-row-label" style="font-size:12px">${row.name}</td>
+      <td style="font-family:var(--mono);text-align:center">${row.piezas || '—'}</td>
+      <td style="font-family:var(--mono)">${row.rev > 0 ? $f(Math.round(row.rev)) : '—'}</td>
+      <td style="font-family:var(--mono)">${row.costo > 0 ? $f(Math.round(row.costo)) : '—'}</td>
+      <td style="font-weight:800;color:${color};font-family:var(--mono);font-size:13px">${row.rev > 0 ? Math.round(row.pct)+'%' : '—'}</td>
+      <td style="font-family:var(--mono);color:var(--t3)">${row.costoPieza !== null ? $f(Math.round(row.costoPieza)) : '—'}</td>
+    </tr>`;
+  });
+
+  // Totales
+  const totalRev   = rows.reduce((a,r) => a + r.rev, 0);
+  const totalCosto = rows.reduce((a,r) => a + r.costo, 0);
+  const totalPct   = totalRev > 0 ? totalCosto / totalRev * 100 : 0;
+  const totalColor = totalPct > 40 ? 'var(--red2)' : totalPct > 30 ? 'var(--ylw)' : 'var(--grn)';
+  h += `<tr style="border-top:2px solid var(--b3)">
+    <td class="pf-row-label" style="font-weight:800;font-size:12px">TOTAL</td>
+    <td></td>
+    <td style="font-family:var(--mono);font-weight:700">${$f(Math.round(totalRev))}</td>
+    <td style="font-family:var(--mono);font-weight:700">${$f(Math.round(totalCosto))}</td>
+    <td style="font-weight:800;color:${totalColor};font-family:var(--mono);font-size:13px">${Math.round(totalPct)}%</td>
+    <td></td>
+  </tr>`;
+
+  h += '</tbody>';
+  document.getElementById('pf-micro-table').innerHTML = h;
 }
 
 function savePFTargets() {
