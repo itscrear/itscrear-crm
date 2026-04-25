@@ -893,8 +893,7 @@ body.light .inactive-row td { opacity:.5; }
         <input class="fi" id="pfm-revenue" type="number" min="0" placeholder="0" oninput="updatePFModalHints()" />
       </div>
     </div>
-    <div class="msec">Cuánto separaste realmente ($)</div>
-    <div style="font-size:10px;font-family:var(--mono);color:var(--t3);margin-bottom:10px;">Ingresá el monto real que transferiste a cada cuenta.</div>
+    <div class="msec">Distribución ($)</div>
     <div class="frow">
       <div class="fg">
         <label>Profit ($) <span id="pfm-profit-hint" style="color:var(--grn);text-transform:none;letter-spacing:0;font-weight:600"></span></label>
@@ -914,6 +913,24 @@ body.light .inactive-row td { opacity:.5; }
         <label>Op. Expenses ($) <span id="pfm-opex-hint" style="color:var(--grn);text-transform:none;letter-spacing:0;font-weight:600"></span></label>
         <input class="fi" id="pfm-opex" type="number" min="0" step="1" placeholder="0" oninput="updatePFModalHints()" />
       </div>
+    </div>
+    <div class="msec">Gastos adicionales ($)</div>
+    <div class="frow">
+      <div class="fg">
+        <label>Software y Herramientas ($)</label>
+        <input class="fi" id="pfm-software" type="number" min="0" step="1" placeholder="0" oninput="updatePFModalHints()" />
+      </div>
+      <div class="fg">
+        <label>Gastos Varios ($)</label>
+        <input class="fi" id="pfm-gastos" type="number" min="0" step="1" placeholder="0" oninput="updatePFModalHints()" />
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fg">
+        <label>Inversión en Pauta ($)</label>
+        <input class="fi" id="pfm-pauta" type="number" min="0" step="1" placeholder="0" oninput="updatePFModalHints()" />
+      </div>
+      <div class="fg"></div>
     </div>
     <div id="pf-modal-sum" style="font-size:11px;font-family:var(--mono);color:var(--t3);margin-bottom:4px;text-align:right;padding:6px 0;border-top:1px solid var(--b1);"></div>
     <div class="mactions">
@@ -3386,13 +3403,16 @@ function renderProfitFirst() {
   document.getElementById('pft-tax').value     = pfTargets.tax_pct;
   document.getElementById('pft-opex').value    = pfTargets.opex_pct;
 
-  // rows: key, label, real_key (field in pfMonthly), target_pct, higher_is_better
+  // rows: key, label, real_key (field in pfMonthly), target_pct (null = sin objetivo)
   const rows = [
-    { key:'revenue',  label:'Real Revenue',  rk:null,              tpct:null,                      hib:null  },
-    { key:'profit',   label:'Profit',         rk:'profit_real',    tpct:pfTargets.profit_pct,      hib:true  },
-    { key:'owners',   label:"Owner's Pay",    rk:'owners_pay_real',tpct:pfTargets.owners_pay_pct,  hib:true  },
-    { key:'tax',      label:'Tax',            rk:'tax_real',       tpct:pfTargets.tax_pct,         hib:true  },
-    { key:'opex',     label:'Op. Expenses',   rk:'opex_real',      tpct:pfTargets.opex_pct,        hib:false },
+    { key:'revenue',  label:'Real Revenue',        rk:null,                tpct:null                        },
+    { key:'profit',   label:'Profit',              rk:'profit_real',       tpct:pfTargets.profit_pct        },
+    { key:'owners',   label:"Owner's Pay",         rk:'owners_pay_real',   tpct:pfTargets.owners_pay_pct   },
+    { key:'tax',      label:'Tax',                 rk:'tax_real',          tpct:pfTargets.tax_pct          },
+    { key:'opex',     label:'Op. Expenses',        rk:'opex_real',         tpct:pfTargets.opex_pct         },
+    { key:'software', label:'Software y Herram.',  rk:'software_real',     tpct:null                        },
+    { key:'gastos',   label:'Gastos Varios',       rk:'gastos_real',       tpct:null                        },
+    { key:'pauta',    label:'Inv. en Pauta',       rk:'pauta_real',        tpct:null                        },
   ];
 
   let html = '<thead><tr><th class="pf-row-header">Categoría</th>';
@@ -3416,27 +3436,15 @@ function renderProfitFirst() {
         html += `<td onclick="openPFModal(${year},${mi})"><div class="pf-cell">
           <span class="pf-amt">${$f(realRev)}</span>${tag}</div></td>`;
       } else {
-        const teorico  = Math.round(realRev * row.tpct / 100);
-        const realAmt  = md[row.rk] != null ? md[row.rk] : null;
-        const hasData  = realAmt !== null;
-
-        let dot = 'neu';
-        if (hasData) {
-          if (row.hib) dot = realAmt >= teorico ? 'grn' : 'red';
-          else         dot = realAmt <= teorico ? 'grn' : 'ylw';
-        }
-        const realColor = dot==='red'?'var(--red2)':dot==='grn'?'var(--grn)':dot==='ylw'?'var(--ylw)':'var(--t2)';
-
+        const realAmt = md[row.rk] != null ? md[row.rk] : null;
+        const hasData = realAmt !== null;
         const realPct = (hasData && realRev > 0) ? Math.round(realAmt / realRev * 100) : null;
         html += `<td onclick="openPFModal(${year},${mi})"><div class="pf-cell">
-          <span class="pf-amt" style="color:${hasData?realColor:'var(--t4)'}">
+          <span class="pf-amt" style="color:${hasData?'var(--t2)':'var(--t4)'}">
             ${hasData ? $f(realAmt) : '—'}
           </span>
-          <div class="pf-pcts">
-            <div class="pf-dot ${dot}"></div>
-            <span style="color:${hasData?realColor:'var(--t4)'};font-weight:700;font-family:var(--mono);font-size:10px">${realPct !== null ? realPct+'%' : '—'}</span>
-            <span class="pf-obj-pct">/ ${row.tpct}%</span>
-          </div></div></td>`;
+          ${realPct !== null ? `<div class="pf-pcts"><span style="font-family:var(--mono);font-size:10px;color:var(--t3)">${realPct}%</span></div>` : ''}
+        </div></td>`;
       }
     }
     html += '</tr>';
@@ -3552,10 +3560,13 @@ function openPFModal(year, mi) {
   document.getElementById('pf-modal-title').textContent = `Profit First — ${MONTHS[mi-1]} ${year}`;
   document.getElementById('pfm-rev-hint').textContent   = `(auto: ${$f(autoRev)})`;
   document.getElementById('pfm-revenue').value = rev;
-  document.getElementById('pfm-profit').value  = md.profit_real      != null ? md.profit_real      : '';
-  document.getElementById('pfm-owners').value  = md.owners_pay_real  != null ? md.owners_pay_real  : '';
-  document.getElementById('pfm-tax').value     = md.tax_real         != null ? md.tax_real         : '';
-  document.getElementById('pfm-opex').value    = md.opex_real        != null ? md.opex_real        : '';
+  document.getElementById('pfm-profit').value   = md.profit_real      != null ? md.profit_real      : '';
+  document.getElementById('pfm-owners').value   = md.owners_pay_real  != null ? md.owners_pay_real  : '';
+  document.getElementById('pfm-tax').value      = md.tax_real         != null ? md.tax_real         : '';
+  document.getElementById('pfm-opex').value     = md.opex_real        != null ? md.opex_real        : '';
+  document.getElementById('pfm-software').value = md.software_real    != null ? md.software_real    : '';
+  document.getElementById('pfm-gastos').value   = md.gastos_real      != null ? md.gastos_real      : '';
+  document.getElementById('pfm-pauta').value    = md.pauta_real       != null ? md.pauta_real       : '';
   updatePFModalHints();
   document.getElementById('ov-pf').classList.add('on');
 }
@@ -3582,11 +3593,14 @@ function updatePFModalHints() {
     }
   });
   // Total separado
-  const p = parseFloat(document.getElementById('pfm-profit').value) || 0;
-  const o = parseFloat(document.getElementById('pfm-owners').value) || 0;
-  const t = parseFloat(document.getElementById('pfm-tax').value)    || 0;
-  const x = parseFloat(document.getElementById('pfm-opex').value)   || 0;
-  const tot = p + o + t + x;
+  const p  = parseFloat(document.getElementById('pfm-profit').value)   || 0;
+  const o  = parseFloat(document.getElementById('pfm-owners').value)   || 0;
+  const t  = parseFloat(document.getElementById('pfm-tax').value)      || 0;
+  const x  = parseFloat(document.getElementById('pfm-opex').value)     || 0;
+  const sw = parseFloat(document.getElementById('pfm-software').value) || 0;
+  const gv = parseFloat(document.getElementById('pfm-gastos').value)   || 0;
+  const pa = parseFloat(document.getElementById('pfm-pauta').value)    || 0;
+  const tot = p + o + t + x + sw + gv + pa;
   const el = document.getElementById('pf-modal-sum');
   el.textContent = rev > 0
     ? `Separado: ${$f(tot)} de ${$f(rev)} (${Math.round(tot/rev*100)}%)`
@@ -3602,6 +3616,9 @@ function savePFModal() {
     owners_pay_real: _v('pfm-owners'),
     tax_real:        _v('pfm-tax'),
     opex_real:       _v('pfm-opex'),
+    software_real:   _v('pfm-software'),
+    gastos_real:     _v('pfm-gastos'),
+    pauta_real:      _v('pfm-pauta'),
   };
   closeModal('ov-pf');
   debounceSave();
